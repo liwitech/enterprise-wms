@@ -10,6 +10,8 @@ from app.api.projects import router as projects_router
 from app.api.tasks import router as tasks_router
 from app.api.timesheets import router as timesheets_router
 from app.api.reports import router as reports_router
+from app.api.dashboard import router as dashboard_router
+from app.api.departments import router as departments_router
 from app.middleware.audit import AuditLogMiddleware
 from app.scheduler import scheduler, setup_scheduler
 
@@ -48,3 +50,5 @@ app.include_router(projects_router, prefix=settings.API_PREFIX)
 app.include_router(tasks_router, prefix=settings.API_PREFIX)
 app.include_router(timesheets_router, prefix=settings.API_PREFIX)
 app.include_router(reports_router, prefix=settings.API_PREFIX)
+app.include_router(dashboard_router, prefix=settings.API_PREFIX)
+app.include_router(departments_router, prefix=settings.API_PREFIX)

@@ -1,5 +1,5 @@
 import { cn } from '@/utils/cn'
-import type { TaskStatus, Priority, ProjectStatus, TimesheetStatus, SprintStatus } from '@/types'
+import type { TaskStatus, Priority, ProjectStatus, TimesheetStatus, SprintStatus, ProjectHealth } from '@/types'
 
 const TASK_STATUS: Record<TaskStatus, { label: string; cls: string }> = {
   TODO: { label: 'Cần làm', cls: 'bg-gray-100 text-gray-700' },
@@ -61,8 +61,20 @@ export function PriorityBadge({ priority }: { priority: Priority }) {
   return <Badge className={cls}>{label}</Badge>
 }
 
-export function ProjectStatusBadge({ status }: { status: ProjectStatus }) {
-  const { label, cls } = PROJECT_STATUS[status] ?? { label: status, cls: 'bg-gray-100 text-gray-700' }
+const HEALTH_STYLE: Record<ProjectHealth, { label: string; cls: string }> = {
+  ON_TRACK: { label: 'Đúng tiến độ', cls: 'bg-emerald-100 text-emerald-700 ring-1 ring-emerald-200' },
+  AT_RISK: { label: 'Có rủi ro', cls: 'bg-amber-100 text-amber-700 ring-1 ring-amber-200' },
+  OVERDUE: { label: 'Quá hạn', cls: 'bg-red-100 text-red-700 ring-1 ring-red-200' },
+}
+
+export function ProjectStatusBadge({ status, health }: { status: ProjectStatus; health?: ProjectHealth }) {
+  const statusInfo = PROJECT_STATUS[status] ?? { label: status, cls: 'bg-gray-100 text-gray-700' }
+  const cls = health ? (HEALTH_STYLE[health]?.cls ?? statusInfo.cls) : statusInfo.cls
+  return <Badge className={cls}>{statusInfo.label}</Badge>
+}
+
+export function HealthBadge({ health }: { health: ProjectHealth }) {
+  const { label, cls } = HEALTH_STYLE[health] ?? { label: health, cls: 'bg-gray-100 text-gray-600' }
   return <Badge className={cls}>{label}</Badge>
 }
 

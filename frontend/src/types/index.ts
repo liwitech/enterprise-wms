@@ -164,3 +164,71 @@ export interface ProjectDashboard {
   member_workload: { user_id: string; full_name: string; task_count: number }[]
   recent_activities: { message: string; timestamp: string }[]
 }
+
+// ── Executive Dashboard ────────────────────────────────────────────────────────
+
+export type ProjectHealth = 'ON_TRACK' | 'AT_RISK' | 'OVERDUE'
+export type AlertType = 'OVERDUE' | 'DELAYED' | 'UNASSIGNED_TASKS'
+export type AlertSeverity = 'HIGH' | 'MEDIUM'
+
+export interface DepartmentBrief {
+  id: string
+  name: string
+  code: string
+}
+
+export interface ProjectOwner {
+  id: string
+  name: string
+  avatar_url?: string
+}
+
+export interface DashboardProjectBrief {
+  id: string
+  name: string
+  dept_name?: string
+  owner: ProjectOwner
+  status: ProjectStatus
+  health: ProjectHealth
+  progress_percent: number
+  start_date?: string
+  end_date?: string
+  days_remaining?: number | null
+  tasks_total: number
+  tasks_done: number
+}
+
+export interface DashboardAlert {
+  project_id: string
+  project_name: string
+  alert_type: AlertType
+  message: string
+  severity: AlertSeverity
+}
+
+export interface WorkloadItem {
+  user_id: string
+  name: string
+  avatar_url?: string
+  tasks_assigned: number
+  tasks_overdue: number
+  capacity_percent: number
+}
+
+export interface ExecutiveDashboardSummary {
+  total_projects: number
+  projects_on_track: number
+  projects_delayed: number
+  projects_overdue: number
+  total_tasks_open: number
+  tasks_due_soon: number
+  total_employees_active: number
+}
+
+export interface ExecutiveDashboardResponse {
+  summary: ExecutiveDashboardSummary
+  projects: DashboardProjectBrief[]
+  alerts: DashboardAlert[]
+  workload: WorkloadItem[]
+  timesheet_pending_count: number
+}
