@@ -4,7 +4,7 @@ import {
   FolderKanban,
   CheckSquare,
   Clock,
-  ClipboardCheck,
+  ShieldCheck,
   BarChart3,
   LogOut,
   Briefcase,
@@ -20,7 +20,7 @@ const navItems = [
 ]
 
 const managerItems = [
-  { to: '/timesheets/pending', icon: ClipboardCheck, label: 'Duyệt chấm công' },
+  { to: '/approvals', icon: ShieldCheck, label: 'Approvals' },
   { to: '/reports', icon: BarChart3, label: 'Báo cáo' },
 ]
 

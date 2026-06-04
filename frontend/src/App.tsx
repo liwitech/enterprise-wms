@@ -1,4 +1,5 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
+import { Toaster } from 'react-hot-toast'
 import ProtectedRoute from '@/components/common/ProtectedRoute'
 import AppLayout from '@/components/layout/AppLayout'
 import LoginPage from '@/pages/LoginPage'
@@ -10,6 +11,7 @@ import TasksPage from '@/pages/TasksPage'
 import TimesheetPage from '@/pages/TimesheetPage'
 import TimesheetHistoryPage from '@/pages/TimesheetHistoryPage'
 import PendingApprovalsPage from '@/pages/PendingApprovalsPage'
+import ApprovalsPage from '@/pages/ApprovalsPage'
 import ReportsPage from '@/pages/ReportsPage'
 import { useAuthStore } from '@/stores/authStore'
 
@@ -23,6 +25,8 @@ function DashboardIndex() {
 
 export default function App() {
   return (
+    <>
+    <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
     <Routes>
       <Route path="/login" element={<LoginPage />} />
 
@@ -49,6 +53,14 @@ export default function App() {
           }
         />
         <Route
+          path="/approvals"
+          element={
+            <ProtectedRoute allowedRoles={['SUPER_ADMIN', 'ADMIN', 'MANAGER']}>
+              <ApprovalsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/reports"
           element={
             <ProtectedRoute allowedRoles={['SUPER_ADMIN', 'ADMIN', 'MANAGER']}>
@@ -60,5 +72,6 @@ export default function App() {
 
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
+    </>
   )
 }

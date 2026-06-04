@@ -1,6 +1,6 @@
 import { useLocation } from 'react-router-dom'
-import { Bell } from 'lucide-react'
 import { useAuthStore } from '@/stores/authStore'
+import NotificationBell from '@/components/notifications/NotificationBell'
 
 const TITLE_MAP: Record<string, string> = {
   '/dashboard': 'Tổng quan',
@@ -9,6 +9,7 @@ const TITLE_MAP: Record<string, string> = {
   '/timesheets': 'Chấm công',
   '/timesheets/pending': 'Duyệt chấm công',
   '/reports': 'Báo cáo',
+  '/approvals': 'Approval Dashboard',
 }
 
 const ROLE_LABEL: Record<string, string> = {
@@ -29,9 +30,7 @@ export default function Header() {
       <h1 className="text-lg font-semibold text-gray-800">{title}</h1>
 
       <div className="flex items-center gap-3">
-        <button className="relative rounded-full p-1.5 text-gray-500 hover:bg-gray-100">
-          <Bell className="h-5 w-5" />
-        </button>
+        <NotificationBell />
         <div className="flex items-center gap-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-sm font-semibold text-white">
             {user?.full_name?.charAt(0).toUpperCase()}
