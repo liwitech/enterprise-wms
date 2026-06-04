@@ -1,0 +1,16 @@
+from app.db.session import Base  # noqa: F401
+from app.models.organization import Organization  # noqa: F401
+from app.models.department import Department  # noqa: F401
+from app.models.user import User  # noqa: F401
+from app.models.user_role import UserRole  # noqa: F401
+from app.models.project import Project  # noqa: F401
+from app.models.project_member import ProjectMember  # noqa: F401
+from app.models.sprint import Sprint  # noqa: F401
+from app.models.milestone import Milestone  # noqa: F401
+from app.models.task_group import TaskGroup  # noqa: F401
+from app.models.task import Task  # noqa: F401
+from app.models.task_comment import TaskComment  # noqa: F401
+from app.models.task_attachment import TaskAttachment  # noqa: F401
+from app.models.timesheet import TimesheetEntry  # noqa: F401
+from app.models.timesheet_weekly_summary import TimesheetWeeklySummary  # noqa: F401
+from app.models.audit_log import AuditLog  # noqa: F401

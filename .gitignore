@@ -1,0 +1,43 @@
+# Dependencies
+node_modules/
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+dist/
+build/
+*.egg
+
+# Environment
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Logs
+*.log
+logs/
+
+# Build output
+frontend/dist/
+frontend/.vite/
+
+# Python virtual env
+venv/
+.venv/
+env/
+
+# Alembic
+backend/alembic/versions/*.pyc
+
+# Docker volumes
+postgres_data/
+redis_data/
