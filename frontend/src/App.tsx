@@ -8,6 +8,7 @@ import ProjectsPage from '@/pages/ProjectsPage'
 import ProjectDetailPage from '@/pages/ProjectDetailPage'
 import TasksPage from '@/pages/TasksPage'
 import TimesheetPage from '@/pages/TimesheetPage'
+import TimesheetHistoryPage from '@/pages/TimesheetHistoryPage'
 import PendingApprovalsPage from '@/pages/PendingApprovalsPage'
 import ReportsPage from '@/pages/ReportsPage'
 import { useAuthStore } from '@/stores/authStore'
@@ -35,9 +36,10 @@ export default function App() {
         <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="/dashboard" element={<DashboardIndex />} />
         <Route path="/projects" element={<ProjectsPage />} />
-        <Route path="/projects/:id" element={<ProjectDetailPage />} />
+        <Route path="/projects/:projectId" element={<ProjectDetailPage />} />
         <Route path="/tasks" element={<TasksPage />} />
         <Route path="/timesheets" element={<TimesheetPage />} />
+        <Route path="/timesheets/history" element={<TimesheetHistoryPage />} />
         <Route
           path="/timesheets/pending"
           element={
