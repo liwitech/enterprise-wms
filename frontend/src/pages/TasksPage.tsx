@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   Plus, Calendar, ChevronRight, GitBranch, AlertTriangle, Clock, RefreshCw,
+  List, LayoutGrid,
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { taskService } from '@/services/taskService'
@@ -10,6 +11,7 @@ import { useAuthStore } from '@/stores/authStore'
 import { TaskStatusBadge, PriorityBadge } from '@/components/ui/Badge'
 import { PageSpinner } from '@/components/ui/Spinner'
 import TaskDetailDrawer from '@/components/project/TaskDetailDrawer'
+import KanbanBoard from '@/components/project/KanbanBoard'
 import { cn } from '@/utils/cn'
 import type { Task, TaskStatus, Priority, RecurrenceType, RecurrenceEndType } from '@/types'
 
@@ -657,6 +659,7 @@ export default function TasksPage() {
   const [projectId, setProjectId] = useState('')
   const [status, setStatus] = useState('')
   const [priority, setPriority] = useState('')
+  const [viewMode, setViewMode] = useState<'list' | 'kanban'>('list')
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
   const [openTaskId, setOpenTaskId] = useState<string | null>(null)
@@ -727,6 +730,15 @@ export default function TasksPage() {
     () => flattenTree(filteredTree, effectiveExpanded),
     [filteredTree, effectiveExpanded],
   )
+
+  // Flat filtered list for Kanban view
+  const kanbanTasks = useMemo(() => {
+    return allTasks.filter((t) => {
+      if (status && t.status !== status) return false
+      if (priority && t.priority !== priority) return false
+      return true
+    })
+  }, [allTasks, status, priority])
 
   // ── Mutations ─────────────────────────────────────────────────────────────
 
@@ -845,8 +857,36 @@ export default function TasksPage() {
         </select>
 
         <span className="ml-auto text-xs text-slate-400">
-          {rows.length} công việc
+          {viewMode === 'kanban' ? kanbanTasks.length : rows.length} công việc
         </span>
+
+        {/* View toggle */}
+        <div className="flex rounded-lg border border-gray-200 bg-white overflow-hidden">
+          <button
+            onClick={() => setViewMode('list')}
+            title="Danh sách"
+            className={cn(
+              'flex items-center gap-1.5 px-3 py-2 text-sm transition-colors',
+              viewMode === 'list'
+                ? 'bg-red-600 text-white'
+                : 'text-slate-500 hover:bg-gray-50',
+            )}
+          >
+            <List className="h-4 w-4" />
+          </button>
+          <button
+            onClick={() => setViewMode('kanban')}
+            title="Kanban"
+            className={cn(
+              'flex items-center gap-1.5 px-3 py-2 text-sm transition-colors',
+              viewMode === 'kanban'
+                ? 'bg-red-600 text-white'
+                : 'text-slate-500 hover:bg-gray-50',
+            )}
+          >
+            <LayoutGrid className="h-4 w-4" />
+          </button>
+        </div>
 
         <button
           onClick={() => setShowCreateModal(true)}
@@ -857,7 +897,17 @@ export default function TasksPage() {
         </button>
       </div>
 
-      {/* Tree table */}
+      {/* Kanban view */}
+      {viewMode === 'kanban' ? (
+        <KanbanBoard
+          tasks={kanbanTasks}
+          onStatusChange={(taskId, newStatus) =>
+            statusMutation.mutate({ taskId, nextStatus: newStatus })
+          }
+          onTaskClick={openTask}
+        />
+      ) : (
+      /* Tree table */
       <div className="rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm">
         {rows.length === 0 ? (
           <div className="py-16 text-center text-slate-400">
@@ -896,6 +946,7 @@ export default function TasksPage() {
           </div>
         )}
       </div>
+      )}
 
       {/* Create modal */}
       {showCreateModal && (
