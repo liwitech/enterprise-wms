@@ -4,6 +4,26 @@ Hệ thống quản lý công việc doanh nghiệp toàn diện, xây dựng tr
 
 ---
 
+## Screenshots
+
+| Đăng nhập | Executive Dashboard |
+|-----------|-------------------|
+| ![Login](docs/screenshots/01-login.png) | ![Dashboard](docs/screenshots/02-dashboard.png) |
+
+| Danh sách dự án | Chi tiết dự án |
+|-----------------|----------------|
+| ![Projects](docs/screenshots/03-projects.png) | ![Project Detail](docs/screenshots/08-project-detail.png) |
+
+| Quản lý công việc | Chấm công |
+|-------------------|-----------|
+| ![Tasks](docs/screenshots/04-tasks.png) | ![Timesheet](docs/screenshots/05-timesheet.png) |
+
+| Phê duyệt | Báo cáo |
+|-----------|---------|
+| ![Approvals](docs/screenshots/07-approvals.png) | ![Reports](docs/screenshots/06-reports.png) |
+
+---
+
 ## Tính năng chính
 
 - **Quản lý dự án** — Tạo và theo dõi dự án theo phương pháp Waterfall, Agile hoặc Mixed; quản lý Sprint và Milestone
