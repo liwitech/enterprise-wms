@@ -91,7 +91,7 @@ export default function TimesheetHistoryPage() {
     format(lastDay, 'dd/MM/yyyy', { locale: vi })
 
   const selectBase =
-    'rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100'
+    'rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm focus:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-100'
 
   return (
     <div className="min-h-screen bg-slate-50 font-['IBM_Plex_Sans',sans-serif]">
@@ -100,7 +100,7 @@ export default function TimesheetHistoryPage() {
         {/* Back link */}
         <Link
           to="/timesheets"
-          className="mb-6 inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-indigo-600"
+          className="mb-6 inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-red-600"
         >
           <ArrowLeft className="h-4 w-4" />
           Về chế độ xem tuần
@@ -108,8 +108,8 @@ export default function TimesheetHistoryPage() {
 
         {/* Page header */}
         <div className="mb-6 flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-100">
-            <Clock className="h-5 w-5 text-indigo-600" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-100">
+            <Clock className="h-5 w-5 text-red-600" />
           </div>
           <div>
             <h1 className="text-xl font-bold text-slate-900">Lịch sử chấm công</h1>
@@ -176,7 +176,7 @@ export default function TimesheetHistoryPage() {
         <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
           {isLoadingTimesheets ? (
             <div className="flex items-center justify-center py-20">
-              <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-200 border-t-indigo-600" />
+              <div className="h-8 w-8 animate-spin rounded-full border-4 border-red-200 border-t-red-600" />
             </div>
           ) : entries.length === 0 ? (
             <div className="flex flex-col items-center justify-center gap-3 py-20 text-center">

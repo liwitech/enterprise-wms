@@ -166,11 +166,8 @@ class MemberWorkload(BaseModel):
 
 
 class RecentActivity(BaseModel):
-    task_id: UUID
-    task_title: str
-    status: str
-    updated_at: datetime
-    assignee_name: str | None = None
+    message: str
+    timestamp: datetime
 
 
 class ProjectDashboard(BaseModel):

@@ -94,7 +94,7 @@ export default function PendingApprovalsPage() {
                     type="checkbox"
                     checked={selectedIds.size === entries.length && entries.length > 0}
                     onChange={toggleAll}
-                    className="h-4 w-4 rounded text-blue-600"
+                    className="h-4 w-4 rounded text-red-600"
                   />
                 </th>
                 <th className="px-4 py-3 text-left font-medium text-gray-600">Nhân viên</th>
@@ -114,7 +114,7 @@ export default function PendingApprovalsPage() {
                       type="checkbox"
                       checked={selectedIds.has(e.id)}
                       onChange={() => toggleSelect(e.id)}
-                      className="h-4 w-4 rounded text-blue-600"
+                      className="h-4 w-4 rounded text-red-600"
                     />
                   </td>
                   <td className="px-4 py-3">
@@ -182,7 +182,7 @@ export default function PendingApprovalsPage() {
               onChange={(e) => setRejectReason(e.target.value)}
               rows={3}
               placeholder="Nhập lý do từ chối..."
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-red-500"
             />
             <div className="mt-4 flex justify-end gap-2">
               <button

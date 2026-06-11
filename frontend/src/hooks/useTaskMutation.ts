@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import toast from 'react-hot-toast'
 import { taskService } from '@/services/taskService'
 import { timesheetService } from '@/services/timesheetService'
 import type { ApiResponse, Task, TaskStatus } from '@/types'
@@ -7,7 +8,9 @@ export function useTaskMutation(projectId: string) {
   const qc = useQueryClient()
 
   const invalidate = () => {
-    qc.invalidateQueries({ queryKey: ['project-tasks'] })
+    // refetchType:'all' ensures inactive (tab-hidden) queries are also marked stale
+    // so they refetch immediately when their tab becomes visible again
+    qc.invalidateQueries({ queryKey: ['project-tasks'], refetchType: 'all' })
     qc.invalidateQueries({ queryKey: ['project-dashboard', projectId] })
   }
 
@@ -42,7 +45,14 @@ export function useTaskMutation(projectId: string) {
 
   const createSubtask = useMutation({
     mutationFn: (data: Partial<Task>) => taskService.create(data),
-    onSettled: invalidate,
+    onSuccess: (task) => {
+      invalidate()
+      if (task.parent_task_id) {
+        qc.invalidateQueries({ queryKey: ['task', task.parent_task_id] })
+      }
+      toast.success('Đã tạo công việc con')
+    },
+    onError: (e: any) => toast.error(e.response?.data?.detail || 'Không thể tạo công việc con'),
   })
 
   const addComment = useMutation({
@@ -62,5 +72,15 @@ export function useTaskMutation(projectId: string) {
     },
   })
 
-  return { updateStatus, updateTask, createSubtask, addComment, logTime }
+  const createTask = useMutation({
+    mutationFn: (data: Partial<Task>) => taskService.create(data),
+    onSuccess: () => {
+      invalidate()
+      toast.success('Đã tạo công việc')
+    },
+    onError: (e: any) =>
+      toast.error(e.response?.data?.detail || 'Không thể tạo công việc'),
+  })
+
+  return { updateStatus, updateTask, createSubtask, addComment, logTime, createTask }
 }

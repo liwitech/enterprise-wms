@@ -10,7 +10,7 @@ function NotificationIcon({ type }: { type: NotificationItem['type'] }) {
   if (type === 'task_overdue') {
     return <AlertCircle className="h-4 w-4 text-orange-500" />
   }
-  return <CheckCircle2 className="h-4 w-4 text-indigo-500" />
+  return <CheckCircle2 className="h-4 w-4 text-red-500" />
 }
 
 export default function NotificationBell() {
@@ -49,7 +49,7 @@ export default function NotificationBell() {
             {unreadCount > 0 && (
               <button
                 onClick={markAllRead}
-                className="flex items-center gap-1 text-xs text-indigo-600 hover:text-indigo-800"
+                className="flex items-center gap-1 text-xs text-red-600 hover:text-indigo-800"
               >
                 <CheckCheck className="h-3.5 w-3.5" /> Đánh dấu đã đọc
               </button>
@@ -65,7 +65,7 @@ export default function NotificationBell() {
                   key={item.id}
                   className={cn(
                     'flex items-start gap-3 px-4 py-3 border-b border-slate-50 hover:bg-slate-50',
-                    !item.read && 'bg-indigo-50/40',
+                    !item.read && 'bg-red-50/40',
                   )}
                 >
                   <div className="mt-0.5 shrink-0">
@@ -78,7 +78,7 @@ export default function NotificationBell() {
                     </p>
                   </div>
                   {!item.read && (
-                    <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-indigo-500" />
+                    <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-red-500" />
                   )}
                 </div>
               ))
@@ -89,7 +89,7 @@ export default function NotificationBell() {
             <Link
               to="/approvals"
               onClick={() => setOpen(false)}
-              className="text-xs text-indigo-600 hover:underline"
+              className="text-xs text-red-600 hover:underline"
             >
               Xem tất cả →
             </Link>

@@ -100,7 +100,7 @@ export default function TimesheetSummaryPanel({ weeklyTotal, projectBreakdown, c
                     <div className="relative flex-1">
                       <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
                         <div
-                          className="h-2 rounded-full bg-indigo-500 transition-all duration-500"
+                          className="h-2 rounded-full bg-red-500 transition-all duration-500"
                           style={{ width: `${barWidth}%`, minWidth: '4px' }}
                         />
                       </div>
@@ -125,7 +125,7 @@ export default function TimesheetSummaryPanel({ weeklyTotal, projectBreakdown, c
             {recentWeeks.map((ws, idx) => {
               const query = weekQueries[idx]
               const entries: TimesheetEntry[] = query.data?.data ?? []
-              const totalHours = entries.reduce((sum, e) => sum + e.hours_logged, 0)
+              const totalHours = entries.reduce((sum, e) => sum + Number(e.hours_logged), 0)
               const weekStatus = deriveWeekStatus(entries)
               const isCurrentWeek = idx === 0
               const weekEnd = new Date(ws)
@@ -141,7 +141,7 @@ export default function TimesheetSummaryPanel({ weeklyTotal, projectBreakdown, c
                   className={cn(
                     'flex items-center justify-between rounded-lg border px-3 py-2',
                     isCurrentWeek
-                      ? 'border-indigo-200 bg-indigo-50'
+                      ? 'border-red-200 bg-red-50'
                       : 'border-transparent bg-slate-50',
                   )}
                 >
@@ -149,7 +149,7 @@ export default function TimesheetSummaryPanel({ weeklyTotal, projectBreakdown, c
                     <span
                       className={cn(
                         'text-xs',
-                        isCurrentWeek ? 'font-semibold text-indigo-700' : 'text-slate-600',
+                        isCurrentWeek ? 'font-semibold text-red-700' : 'text-slate-600',
                       )}
                     >
                       {label}
@@ -163,7 +163,7 @@ export default function TimesheetSummaryPanel({ weeklyTotal, projectBreakdown, c
                   <span
                     className={cn(
                       'ml-2 shrink-0 text-xs font-medium',
-                      isCurrentWeek ? 'text-indigo-700' : 'text-slate-500',
+                      isCurrentWeek ? 'text-red-700' : 'text-slate-500',
                     )}
                   >
                     {query.isLoading ? '…' : `${totalHours.toFixed(1)}h`}

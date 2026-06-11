@@ -66,3 +66,10 @@ class TimesheetStatusEnum(str, enum.Enum):
     SUBMITTED = "SUBMITTED"
     APPROVED = "APPROVED"
     REJECTED = "REJECTED"
+
+
+class DeptTypeEnum(str, enum.Enum):
+    KHOI = "KHOI"
+    BAN = "BAN"
+    TRUNG_TAM = "TRUNG_TAM"
+    PHONG = "PHONG"

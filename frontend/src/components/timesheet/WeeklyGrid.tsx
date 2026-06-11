@@ -21,6 +21,7 @@ interface TimeCellProps {
 function TimeCell({ cell, rowIdx, colIdx, isWeekend, onChange }: TimeCellProps) {
   const [draft, setDraft] = useState(cell.hours === 0 ? '' : String(cell.hours))
   const inputRef = useRef<HTMLInputElement>(null)
+  const escapeRef = useRef(false)
 
   // Sync draft from props only when this input is not focused
   useEffect(() => {
@@ -67,7 +68,7 @@ function TimeCell({ cell, rowIdx, colIdx, isWeekend, onChange }: TimeCellProps) 
 
   const inputCls = [
     'w-full rounded border px-1.5 py-1 text-center text-sm outline-none',
-    'focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400',
+    'focus:ring-2 focus:ring-red-400 focus:border-red-400',
     cell.status === 'REJECTED'
       ? 'border-red-300 bg-red-50 text-red-800'
       : isWeekend
@@ -88,10 +89,14 @@ function TimeCell({ cell, rowIdx, colIdx, isWeekend, onChange }: TimeCellProps) 
       className={inputCls}
       placeholder="0"
       onChange={(e) => setDraft(e.target.value)}
-      onBlur={(e) => commit(e.target.value)}
+      onBlur={(e) => {
+        if (escapeRef.current) { escapeRef.current = false; return }
+        commit(e.target.value)
+      }}
       onFocus={(e) => e.target.select()}
       onKeyDown={(e) => {
         if (e.key === 'Escape') {
+          escapeRef.current = true
           setDraft(cell.hours === 0 ? '' : String(cell.hours))
           inputRef.current?.blur()
         }

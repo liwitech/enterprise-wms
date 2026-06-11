@@ -64,13 +64,13 @@ export default function ProjectsPage() {
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1) }}
             placeholder="Tìm kiếm dự án..."
-            className="w-full rounded-lg border border-gray-300 py-2 pl-9 pr-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+            className="w-full rounded-lg border border-gray-300 py-2 pl-9 pr-3 text-sm outline-none focus:border-red-500 focus:ring-2 focus:ring-red-500/20"
           />
         </div>
         <select
           value={status}
           onChange={(e) => { setStatus(e.target.value); setPage(1) }}
-          className="rounded-lg border border-gray-300 py-2 pl-3 pr-8 text-sm outline-none focus:border-blue-500"
+          className="rounded-lg border border-gray-300 py-2 pl-3 pr-8 text-sm outline-none focus:border-red-500"
         >
           {STATUS_OPTIONS.map((o) => (
             <option key={o.value} value={o.value}>{o.label}</option>
@@ -79,7 +79,7 @@ export default function ProjectsPage() {
         <select
           value={priority}
           onChange={(e) => { setPriority(e.target.value); setPage(1) }}
-          className="rounded-lg border border-gray-300 py-2 pl-3 pr-8 text-sm outline-none focus:border-blue-500"
+          className="rounded-lg border border-gray-300 py-2 pl-3 pr-8 text-sm outline-none focus:border-red-500"
         >
           {PRIORITY_OPTIONS.map((o) => (
             <option key={o.value} value={o.value}>{o.label}</option>
@@ -88,7 +88,7 @@ export default function ProjectsPage() {
         {canCreate && (
           <button
             onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+            className="flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
           >
             <Plus className="h-4 w-4" />
             Tạo dự án
@@ -107,16 +107,16 @@ export default function ProjectsPage() {
             <Link
               key={p.id}
               to={`/projects/${p.id}`}
-              className="group rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:border-blue-300 hover:shadow-md"
+              className="group rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:border-red-300 hover:shadow-md"
             >
               <div className="mb-3 flex items-start justify-between gap-2">
                 <div>
-                  <p className="font-semibold text-gray-800 group-hover:text-blue-600">
+                  <p className="font-semibold text-gray-800 group-hover:text-red-600">
                     {p.name}
                   </p>
                   <p className="text-xs text-gray-400">{p.code}</p>
                 </div>
-                <ChevronRight className="h-4 w-4 flex-shrink-0 text-gray-300 group-hover:text-blue-400" />
+                <ChevronRight className="h-4 w-4 flex-shrink-0 text-gray-300 group-hover:text-red-400" />
               </div>
 
               <div className="mb-3 flex flex-wrap gap-2">
@@ -135,7 +135,7 @@ export default function ProjectsPage() {
                 </div>
                 <div className="h-1.5 rounded-full bg-gray-100">
                   <div
-                    className="h-1.5 rounded-full bg-blue-500"
+                    className="h-1.5 rounded-full bg-red-500"
                     style={{ width: `${p.progress_percent}%` }}
                   />
                 </div>
@@ -227,7 +227,7 @@ function CreateProjectModal({
             <input
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-red-500"
               placeholder="Nhập tên dự án"
             />
           </div>
@@ -236,7 +236,7 @@ function CreateProjectModal({
             <input
               value={form.code}
               onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm uppercase outline-none focus:border-blue-500"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm uppercase outline-none focus:border-red-500"
               placeholder="VD: PROJ-001"
             />
           </div>
@@ -246,7 +246,7 @@ function CreateProjectModal({
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
               rows={3}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-red-500"
               placeholder="Mô tả về dự án"
             />
           </div>
@@ -256,7 +256,7 @@ function CreateProjectModal({
               <select
                 value={form.priority}
                 onChange={(e) => setForm({ ...form, priority: e.target.value })}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-red-500"
               >
                 <option value="LOW">Thấp</option>
                 <option value="MEDIUM">Trung bình</option>
@@ -269,7 +269,7 @@ function CreateProjectModal({
               <select
                 value={form.project_type}
                 onChange={(e) => setForm({ ...form, project_type: e.target.value })}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-red-500"
               >
                 <option value="AGILE">Agile</option>
                 <option value="WATERFALL">Waterfall</option>
@@ -289,7 +289,7 @@ function CreateProjectModal({
           <button
             onClick={() => mutation.mutate()}
             disabled={mutation.isPending || !form.name || !form.code}
-            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-60"
+            className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-60"
           >
             {mutation.isPending ? 'Đang tạo...' : 'Tạo dự án'}
           </button>

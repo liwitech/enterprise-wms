@@ -51,7 +51,7 @@ export default function Pagination({ page, totalPages, total, perPage, onChange 
               className={cn(
                 'min-w-[32px] rounded-md px-2 py-1 text-sm',
                 p === page
-                  ? 'bg-blue-600 text-white'
+                  ? 'bg-red-600 text-white'
                   : 'text-gray-600 hover:bg-gray-100',
               )}
             >

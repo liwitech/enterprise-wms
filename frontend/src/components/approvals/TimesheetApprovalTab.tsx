@@ -372,7 +372,7 @@ export default function TimesheetApprovalTab() {
             placeholder="Tìm nhân viên..."
             value={searchEmployee}
             onChange={(e) => setSearchEmployee(e.target.value)}
-            className="w-full rounded-lg border border-slate-200 bg-white py-2 pl-9 pr-3 text-sm text-slate-800 placeholder-slate-400 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+            className="w-full rounded-lg border border-slate-200 bg-white py-2 pl-9 pr-3 text-sm text-slate-800 placeholder-slate-400 outline-none focus:border-red-400 focus:ring-2 focus:ring-red-100"
           />
         </div>
 
@@ -380,7 +380,7 @@ export default function TimesheetApprovalTab() {
         <select
           value={weekFilter}
           onChange={(e) => setWeekFilter(e.target.value)}
-          className="rounded-lg border border-slate-200 bg-white py-2 pl-3 pr-8 text-sm text-slate-700 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+          className="rounded-lg border border-slate-200 bg-white py-2 pl-3 pr-8 text-sm text-slate-700 outline-none focus:border-red-400 focus:ring-2 focus:ring-red-100"
         >
           <option value="">Tất cả các tuần</option>
           {weekOptions.map((opt) => (
@@ -402,14 +402,14 @@ export default function TimesheetApprovalTab() {
 
       {/* Batch action bar */}
       {selectedKeys.size > 0 && (
-        <div className="flex items-center justify-between rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-2.5">
-          <span className="text-sm font-medium text-indigo-700">
+        <div className="flex items-center justify-between rounded-lg border border-red-200 bg-red-50 px-4 py-2.5">
+          <span className="text-sm font-medium text-red-700">
             Đã chọn {selectedKeys.size} nhóm
           </span>
           <button
             onClick={handleBatchApprove}
             disabled={isMutating}
-            className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-60 transition-colors"
+            className="flex items-center gap-1.5 rounded-lg bg-red-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-60 transition-colors"
           >
             <CheckSquare className="h-4 w-4" />
             Duyệt tất cả đã chọn
@@ -433,7 +433,7 @@ export default function TimesheetApprovalTab() {
                     type="checkbox"
                     checked={allFilteredSelected}
                     onChange={toggleSelectAll}
-                    className="h-4 w-4 rounded border-slate-300 text-indigo-600 accent-indigo-600"
+                    className="h-4 w-4 rounded border-slate-300 text-red-600 accent-red-600"
                   />
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
@@ -469,7 +469,7 @@ export default function TimesheetApprovalTab() {
                     <tr
                       className={cn(
                         'hover:bg-slate-50 transition-colors',
-                        isSelected && 'bg-indigo-50/50',
+                        isSelected && 'bg-red-50/50',
                       )}
                     >
                       {/* Checkbox */}
@@ -478,7 +478,7 @@ export default function TimesheetApprovalTab() {
                           type="checkbox"
                           checked={isSelected}
                           onChange={() => toggleGroupSelect(group.key)}
-                          className="h-4 w-4 rounded border-slate-300 text-indigo-600 accent-indigo-600"
+                          className="h-4 w-4 rounded border-slate-300 text-red-600 accent-red-600"
                         />
                       </td>
 
@@ -498,7 +498,7 @@ export default function TimesheetApprovalTab() {
                           </button>
 
                           {/* Avatar */}
-                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-xs font-semibold text-indigo-700">
+                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-red-100 text-xs font-semibold text-red-700">
                             {getInitials(group.userName)}
                           </div>
 
@@ -562,17 +562,17 @@ export default function TimesheetApprovalTab() {
                           <div className="border-t border-slate-100 bg-slate-50">
                             <table className="w-full text-xs">
                               <thead>
-                                <tr className="border-b border-indigo-100 bg-indigo-50/60">
-                                  <th className="px-6 py-2 text-left font-medium text-indigo-700">
+                                <tr className="border-b border-red-100 bg-red-50/60">
+                                  <th className="px-6 py-2 text-left font-medium text-red-700">
                                     Ngày
                                   </th>
-                                  <th className="px-4 py-2 text-left font-medium text-indigo-700">
+                                  <th className="px-4 py-2 text-left font-medium text-red-700">
                                     Dự án
                                   </th>
-                                  <th className="px-4 py-2 text-left font-medium text-indigo-700">
+                                  <th className="px-4 py-2 text-left font-medium text-red-700">
                                     Số giờ
                                   </th>
-                                  <th className="px-4 py-2 text-left font-medium text-indigo-700">
+                                  <th className="px-4 py-2 text-left font-medium text-red-700">
                                     Mô tả
                                   </th>
                                 </tr>
@@ -638,7 +638,7 @@ export default function TimesheetApprovalTab() {
                 'w-full rounded-lg border px-3 py-2 text-sm text-slate-800 outline-none transition-colors',
                 reasonInvalid
                   ? 'border-red-400 focus:border-red-500 focus:ring-2 focus:ring-red-100'
-                  : 'border-slate-300 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100',
+                  : 'border-slate-300 focus:border-red-400 focus:ring-2 focus:ring-red-100',
               )}
             />
             {reasonInvalid && (

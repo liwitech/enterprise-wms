@@ -1,0 +1,14 @@
+# PgBouncer userlist.txt
+#
+# Format: "username" "md5hash"
+#
+# To generate the MD5 hash for a user, run:
+#   echo -n "passwordusername" | md5sum
+#
+# Example: for user "ewms" with password "mysecret":
+#   echo -n "mysecretwms" | md5sum
+#   → replace the placeholder below with "md5" + the resulting hash
+#
+# IMPORTANT: Replace the placeholder before deploying to production.
+
+"ewms" "md5_placeholder_replace_with_actual_md5"

@@ -10,6 +10,7 @@ export interface TaskListParams {
   priority?: string
   sprint_id?: string
   is_overdue?: boolean
+  include_subtasks?: boolean
 }
 
 export const taskService = {

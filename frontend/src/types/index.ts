@@ -32,6 +32,29 @@ export interface User {
   avatar_url?: string
   employee_code?: string
   created_at: string
+  updated_at: string
+}
+
+export interface Organization {
+  id: string
+  name: string
+  code: string
+  logo_url?: string
+  created_at: string
+}
+
+export type DeptType = 'KHOI' | 'BAN' | 'TRUNG_TAM' | 'PHONG'
+
+export interface Department {
+  id: string
+  org_id: string
+  name: string
+  code: string
+  dept_type?: DeptType
+  parent_dept_id?: string
+  manager_user_id?: string
+  created_at: string
+  children?: Department[]
 }
 
 export interface UserBrief {
@@ -97,14 +120,19 @@ export interface Sprint {
 export interface Milestone {
   id: string
   project_id: string
-  title: string
+  name: string
   due_date?: string
   status: 'PENDING' | 'ACHIEVED' | 'MISSED'
 }
 
+export type RecurrenceType = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY'
+export type RecurrenceEndType = 'NEVER' | 'COUNT' | 'UNTIL'
+
 export interface Task {
   id: string
+  task_code: string
   project_id: string
+  parent_task_id?: string
   title: string
   description?: string
   status: TaskStatus
@@ -112,12 +140,24 @@ export interface Task {
   assignee_user_id?: string
   reporter_user_id?: string
   sprint_id?: string
+  start_date?: string
   due_date?: string
   estimated_hours?: number
   actual_hours?: number
   tags?: string[]
+  subtasks?: Task[]
+  parent?: Task
   created_at: string
   updated_at: string
+  // Recurrence
+  is_recurring?: boolean
+  recurrence_type?: RecurrenceType
+  recurrence_interval?: number
+  recurrence_days?: number[]
+  recurrence_end_type?: RecurrenceEndType
+  recurrence_count?: number
+  recurrence_until?: string
+  recurrence_parent_id?: string
 }
 
 export interface TaskComment {
@@ -231,4 +271,66 @@ export interface ExecutiveDashboardResponse {
   alerts: DashboardAlert[]
   workload: WorkloadItem[]
   timesheet_pending_count: number
+}
+
+// ── KPI Report ─────────────────────────────────────────────────────────────────
+
+export interface MemberKPIItem {
+  user_id: string
+  full_name: string
+  email: string
+  role: ProjectMemberRole
+  tasks_assigned: number
+  tasks_done_ontime: number
+  tasks_done_overdue: number
+  tasks_done_no_deadline: number
+  tasks_overdue: number
+  tasks_in_progress: number
+  tasks_todo: number
+  ontime_rate: number | null
+  total_actual_hours: number
+  total_estimated_hours: number
+}
+
+export interface ProjectKPIReport {
+  project_id: string
+  project_name: string
+  as_of: string
+  members: MemberKPIItem[]
+}
+
+export interface MemberKPISummary {
+  tasks_assigned: number
+  tasks_done: number
+  tasks_done_ontime: number
+  tasks_done_overdue: number
+  tasks_done_no_deadline: number
+  tasks_overdue: number
+  tasks_in_progress: number
+  tasks_todo: number
+  ontime_rate: number | null
+  completion_rate: number | null
+  total_actual_hours: number
+  total_estimated_hours: number
+}
+
+export interface MemberKPIProjectBreakdown {
+  project_id: string
+  project_name: string
+  tasks_assigned: number
+  tasks_done_ontime: number
+  tasks_done_overdue: number
+  tasks_overdue: number
+  ontime_rate: number | null
+  total_actual_hours: number
+}
+
+export interface MemberKPIData {
+  user_id: string
+  full_name: string
+  email: string
+  as_of: string
+  kpi_score: number | null
+  summary: MemberKPISummary
+  projects: MemberKPIProjectBreakdown[]
 }

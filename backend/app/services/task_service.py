@@ -1,9 +1,10 @@
-from datetime import date
+import calendar as _cal
+from datetime import date, datetime, timedelta, timezone
 from typing import Optional
 from uuid import UUID
 
 from fastapi import HTTPException
-from sqlalchemy import func, select
+from sqlalchemy import func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -20,6 +21,70 @@ from app.schemas.task import (
     TaskUpdate,
     TimesheetSummaryBrief,
 )
+
+
+def _generate_recurrence_dates(
+    start: date,
+    rtype: str,
+    interval: int,
+    days: list[int] | None,
+    end_type: str,
+    count: int | None,
+    until: date | None,
+) -> list[date]:
+    """Return all occurrence dates for a recurring task (including the first)."""
+    MAX_COUNT = {'DAILY': 90, 'WEEKLY': 104, 'MONTHLY': 36, 'YEARLY': 10}
+    cap = MAX_COUNT.get(rtype, 52)
+    if end_type == 'COUNT' and count:
+        cap = min(count, cap)
+
+    results: list[date] = []
+
+    def over_limit(d: date) -> bool:
+        return (end_type == 'UNTIL' and until is not None and d > until) or len(results) >= cap
+
+    if rtype == 'DAILY':
+        cur = start
+        while not over_limit(cur):
+            results.append(cur)
+            cur += timedelta(days=interval)
+
+    elif rtype == 'WEEKLY':
+        selected = sorted(set(days or [start.weekday()]))
+        week_monday = start - timedelta(days=start.weekday())
+        week_iter = 0
+        while len(results) < cap and week_iter <= 200:
+            for day_offset in selected:
+                candidate = week_monday + timedelta(days=day_offset)
+                if candidate < start:
+                    continue
+                if over_limit(candidate):
+                    return results
+                results.append(candidate)
+            week_iter += 1
+            week_monday += timedelta(weeks=interval)
+
+    elif rtype == 'MONTHLY':
+        cur = start
+        while not over_limit(cur):
+            results.append(cur)
+            m = cur.month + interval
+            y = cur.year + (m - 1) // 12
+            m = ((m - 1) % 12) + 1
+            d = min(start.day, _cal.monthrange(y, m)[1])
+            cur = date(y, m, d)
+
+    elif rtype == 'YEARLY':
+        cur = start
+        while not over_limit(cur):
+            results.append(cur)
+            y = cur.year + interval
+            try:
+                cur = date(y, cur.month, cur.day)
+            except ValueError:
+                cur = date(y, cur.month, 28)
+
+    return results
 
 
 class TaskService:
@@ -40,13 +105,14 @@ class TaskService:
         due_date_from: Optional[date] = None,
         due_date_to: Optional[date] = None,
         is_overdue: Optional[bool] = None,
+        include_subtasks: bool = False,
         page: int = 1,
         per_page: int = 20,
     ) -> tuple[list[Task], int]:
-        q = select(Task).where(
-            Task.deleted_at.is_(None),
-            Task.parent_task_id.is_(None),
-        )
+        base_conditions = [Task.deleted_at.is_(None)]
+        if not include_subtasks:
+            base_conditions.append(Task.parent_task_id.is_(None))
+        q = select(Task).where(*base_conditions)
 
         if user.role not in (UserRoleEnum.SUPER_ADMIN, UserRoleEnum.ADMIN):
             member_subq = select(ProjectMember.project_id).where(
@@ -91,15 +157,63 @@ class TaskService:
 
     async def create_task(self, data: TaskCreate, user: User) -> Task:
         await self._check_member(data.project_id, user)
+        seq_val = (await self.db.execute(text("SELECT nextval('task_code_seq')"))).scalar()
+        task_code = f"TASK-{seq_val:04d}"
         task = Task(
             **data.model_dump(exclude={"reporter_user_id"}),
             reporter_user_id=user.id,
+            task_code=task_code,
         )
         self.db.add(task)
+
+        if data.is_recurring and data.recurrence_type and data.start_date:
+            await self.db.flush()  # obtain task.id before creating children
+            await self._create_recurrence_instances(task, data, user)
+
         await self.db.commit()
         await self.db.refresh(task)
         await redis_client.dashboard_cache_invalidate(str(task.project_id))
         return task
+
+    async def _create_recurrence_instances(self, template: Task, data: TaskCreate, user: User) -> None:
+        dates = _generate_recurrence_dates(
+            start=data.start_date,  # type: ignore[arg-type]
+            rtype=data.recurrence_type,  # type: ignore[arg-type]
+            interval=data.recurrence_interval or 1,
+            days=data.recurrence_days,
+            end_type=data.recurrence_end_type or 'NEVER',
+            count=data.recurrence_count,
+            until=data.recurrence_until,
+        )
+
+        duration_days: int | None = None
+        if data.due_date and data.start_date:
+            duration_days = (data.due_date - data.start_date).days
+
+        for occurrence_date in dates[1:]:  # first date is the template task itself
+            seq_val = (await self.db.execute(text("SELECT nextval('task_code_seq')"))).scalar()
+            child_due = (
+                occurrence_date + timedelta(days=duration_days)
+                if duration_days is not None else None
+            )
+            child = Task(
+                project_id=data.project_id,
+                sprint_id=data.sprint_id,
+                title=data.title,
+                description=data.description,
+                status=TaskStatusEnum.TODO,
+                priority=data.priority,
+                assignee_user_id=data.assignee_user_id,
+                start_date=occurrence_date,
+                due_date=child_due,
+                estimated_hours=data.estimated_hours,
+                tags=data.tags,
+                reporter_user_id=user.id,
+                task_code=f"TASK-{seq_val:04d}",
+                is_recurring=True,
+                recurrence_parent_id=template.id,
+            )
+            self.db.add(child)
 
     # ── Get Detail ────────────────────────────────────────────────────────────
 
@@ -109,6 +223,7 @@ class TaskService:
                 select(Task)
                 .options(
                     selectinload(Task.subtasks),
+                    selectinload(Task.parent),
                     selectinload(Task.comments).selectinload(TaskComment.user),
                     selectinload(Task.attachments),
                 )
@@ -138,7 +253,14 @@ class TaskService:
     async def update_task(self, task_id: UUID, data: TaskUpdate, user: User) -> Task:
         task = await self._get_or_404(task_id)
         await self._check_modify(task, user)
-        for k, v in data.model_dump(exclude_none=True).items():
+        updates = data.model_dump(exclude_unset=True)
+        if "status" in updates:
+            new_status = updates["status"]
+            if new_status == TaskStatusEnum.DONE and task.status != TaskStatusEnum.DONE:
+                updates["completed_at"] = datetime.now(timezone.utc)
+            elif new_status != TaskStatusEnum.DONE and task.status == TaskStatusEnum.DONE:
+                updates["completed_at"] = None
+        for k, v in updates.items():
             setattr(task, k, v)
         await self.db.commit()
         await self.db.refresh(task)
@@ -154,6 +276,10 @@ class TaskService:
         await self._check_modify(task, user)
         old_status = task.status
         task.status = data.status
+        if data.status == TaskStatusEnum.DONE and old_status != TaskStatusEnum.DONE:
+            task.completed_at = datetime.now(timezone.utc)
+        elif data.status != TaskStatusEnum.DONE and old_status == TaskStatusEnum.DONE:
+            task.completed_at = None
         await self.db.commit()
         await self.db.refresh(task)
 

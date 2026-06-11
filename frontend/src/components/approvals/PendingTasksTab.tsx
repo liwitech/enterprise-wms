@@ -240,12 +240,12 @@ export default function PendingTasksTab() {
                       disabled={assignMutation.isPending}
                       className={cn(
                         'flex w-full items-center gap-3 rounded-lg border border-slate-100 px-3 py-2.5',
-                        'hover:border-indigo-200 hover:bg-indigo-50 disabled:opacity-60 transition-colors text-left',
+                        'hover:border-red-200 hover:bg-red-50 disabled:opacity-60 transition-colors text-left',
                         assignModal.task.assignee_user_id === member.user_id &&
-                          'border-indigo-200 bg-indigo-50',
+                          'border-red-200 bg-red-50',
                       )}
                     >
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-xs font-semibold text-indigo-700">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-red-100 text-xs font-semibold text-red-700">
                         {getInitials(name)}
                       </div>
                       <div className="min-w-0">
@@ -255,7 +255,7 @@ export default function PendingTasksTab() {
                         )}
                       </div>
                       {assignModal.task.assignee_user_id === member.user_id && (
-                        <span className="ml-auto text-xs font-medium text-indigo-600">
+                        <span className="ml-auto text-xs font-medium text-red-600">
                           Đang giao
                         </span>
                       )}

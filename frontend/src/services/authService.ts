@@ -19,4 +19,14 @@ export const authService = {
       // ignore logout errors
     }
   },
+
+  async ssoGetAuthorizeUrl(): Promise<string> {
+    const res = await api.get<{ url: string }>('/api/auth/sso/authorize')
+    return res.data.url
+  },
+
+  async ssoCallback(code: string, state: string): Promise<AuthTokens> {
+    const res = await api.post<AuthTokens>('/api/auth/sso/callback', { code, state })
+    return res.data
+  },
 }

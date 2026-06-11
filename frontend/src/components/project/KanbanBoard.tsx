@@ -49,7 +49,7 @@ function TaskCard({
   return (
     <div
       className={cn(
-        'rounded-lg border border-slate-200 bg-white p-3 shadow-sm cursor-pointer hover:border-indigo-300 transition-colors select-none',
+        'rounded-lg border border-slate-200 bg-white p-3 shadow-sm cursor-pointer hover:border-red-300 transition-colors select-none',
         isDragging && 'opacity-50',
       )}
       onClick={onClick}
@@ -129,7 +129,7 @@ function DroppableColumn({
         ref={setNodeRef}
         className={cn(
           'flex-1 min-h-[200px] rounded-b-lg border border-slate-200 bg-slate-50/50 p-2 space-y-2 transition-colors',
-          isOver && 'bg-indigo-50 border-indigo-200',
+          isOver && 'bg-red-50 border-red-200',
         )}
       >
         {tasks.map((t) => (

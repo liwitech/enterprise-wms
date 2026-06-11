@@ -45,7 +45,7 @@ function HealthBadge({ health }: { health: ProjectHealth }) {
 // ── Progress Bar ──────────────────────────────────────────────────────────────
 
 function ProgressBar({ percent, colorByHealth = false }: { percent: number; colorByHealth?: boolean }) {
-  let barCls = 'bg-indigo-500'
+  let barCls = 'bg-red-500'
   if (colorByHealth) {
     if (percent < 50) barCls = 'bg-red-500'
     else if (percent < 80) barCls = 'bg-amber-500'
@@ -87,7 +87,7 @@ function WorkloadBar({ item }: { item: WorkloadItem }) {
       </div>
       <div className="h-2 rounded-full bg-slate-100">
         <div
-          className={cn('h-2 rounded-full transition-all duration-300', overloaded ? 'bg-red-500' : 'bg-indigo-500')}
+          className={cn('h-2 rounded-full transition-all duration-300', overloaded ? 'bg-red-500' : 'bg-red-400')}
           style={{ width: `${Math.min(item.capacity_percent, 100)}%` }}
         />
       </div>
@@ -129,7 +129,7 @@ function AlertPanel({ alerts }: { alerts: DashboardAlert[] }) {
               <p className="text-sm text-slate-700">{a.message}</p>
               <Link
                 to={`/projects/${a.project_id}`}
-                className="mt-0.5 text-xs font-medium text-indigo-600 hover:underline"
+                className="mt-0.5 text-xs font-medium text-red-600 hover:underline"
               >
                 Xem dự án →
               </Link>
@@ -180,8 +180,8 @@ type SortDir = 'asc' | 'desc'
 function SortIcon({ col, active, dir }: { col: string; active: string; dir: SortDir }) {
   if (col !== active) return <ChevronsUpDown className="h-3 w-3 text-slate-300" />
   return dir === 'asc'
-    ? <ChevronUp className="h-3 w-3 text-indigo-500" />
-    : <ChevronDown className="h-3 w-3 text-indigo-500" />
+    ? <ChevronUp className="h-3 w-3 text-red-500" />
+    : <ChevronDown className="h-3 w-3 text-red-500" />
 }
 
 const _HEALTH_ORDER: Record<ProjectHealth, number> = { OVERDUE: 0, AT_RISK: 1, ON_TRACK: 2 }
@@ -257,7 +257,7 @@ export default function ExecutiveDashboard() {
               ? format(new Date(dataUpdatedAt), 'HH:mm:ss', { locale: vi })
               : '—'}
             {isFetching && (
-              <span className="ml-2 text-indigo-500">• đang tải...</span>
+              <span className="ml-2 text-red-500">• đang tải...</span>
             )}
           </p>
         </div>
@@ -267,7 +267,7 @@ export default function ExecutiveDashboard() {
             <select
               value={deptId}
               onChange={e => setDeptId(e.target.value)}
-              className="rounded-lg border border-slate-200 bg-white py-2 pl-3 pr-8 text-sm text-slate-700 shadow-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-400/20"
+              className="rounded-lg border border-slate-200 bg-white py-2 pl-3 pr-8 text-sm text-slate-700 shadow-sm outline-none focus:border-red-400 focus:ring-2 focus:ring-red-400/20"
             >
               <option value="">Tất cả phòng ban</option>
               {depts.map(d => (
@@ -278,7 +278,7 @@ export default function ExecutiveDashboard() {
           <select
             value={period}
             onChange={e => setPeriod(e.target.value as typeof period)}
-            className="rounded-lg border border-slate-200 bg-white py-2 pl-3 pr-8 text-sm text-slate-700 shadow-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-400/20"
+            className="rounded-lg border border-slate-200 bg-white py-2 pl-3 pr-8 text-sm text-slate-700 shadow-sm outline-none focus:border-red-400 focus:ring-2 focus:ring-red-400/20"
           >
             <option value="current_month">Tháng này</option>
             <option value="current_quarter">Quý này</option>
@@ -307,7 +307,7 @@ export default function ExecutiveDashboard() {
               label="Tổng dự án"
               value={s?.total_projects ?? 0}
               sub={`${s?.projects_on_track ?? 0} đúng tiến độ · ${s?.projects_delayed ?? 0} rủi ro`}
-              color="bg-indigo-500"
+              color="bg-red-600"
             />
             <KpiCard
               icon={TrendingUp}
@@ -420,7 +420,7 @@ export default function ExecutiveDashboard() {
         {/* Workload */}
         <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
           <div className="flex items-center gap-2 border-b border-slate-100 px-5 py-4">
-            <Users className="h-4 w-4 text-indigo-500" />
+            <Users className="h-4 w-4 text-red-500" />
             <h3 className="font-semibold text-slate-800">Khối lượng công việc</h3>
             <span className="ml-1 text-xs text-slate-400">(Top 10)</span>
             {s?.total_employees_active ? (
@@ -477,14 +477,14 @@ function ProjectRow({ project: p, onClick }: { project: DashboardProjectBrief; o
       onClick={onClick}
     >
       <td className="px-5 py-3.5">
-        <p className="font-semibold text-slate-800 transition-colors group-hover:text-indigo-600">
+        <p className="font-semibold text-slate-800 transition-colors group-hover:text-red-600">
           {p.name}
         </p>
         {p.dept_name && <p className="text-xs text-slate-400">{p.dept_name}</p>}
       </td>
       <td className="px-4 py-3.5">
         <div className="flex items-center gap-2">
-          <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-xs font-bold text-indigo-600">
+          <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-red-100 text-xs font-bold text-red-600">
             {p.owner.name.charAt(0).toUpperCase()}
           </div>
           <span className="max-w-[120px] truncate text-slate-600">{p.owner.name}</span>

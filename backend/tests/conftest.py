@@ -25,9 +25,11 @@ async def isolate_test():
     next test's loop tries to reuse connections from the previous loop.
     """
     async with aioredis.from_url(settings.REDIS_URL, decode_responses=True) as r:
-        keys = await r.keys("rate:login:*")
-        if keys:
-            await r.delete(*keys)
+        # Clear rate-limit keys and dashboard cache (exec:*) so service code always executes
+        for pattern in ("LIMITS:*", "rate:login:*", "exec:*"):
+            keys = await r.keys(pattern)
+            if keys:
+                await r.delete(*keys)
 
     yield
 
@@ -80,3 +82,18 @@ async def employee_tokens(client: AsyncClient) -> dict:
 @pytest.fixture
 async def employee_headers(employee_tokens: dict) -> dict[str, str]:
     return {"Authorization": f"Bearer {employee_tokens['access_token']}"}
+
+
+@pytest.fixture
+async def manager_tokens(client: AsyncClient) -> dict:
+    resp = await client.post(
+        "/api/auth/login",
+        json={"email": MANAGER_EMAIL, "password": MANAGER_PASSWORD},
+    )
+    assert resp.status_code == 200, resp.text
+    return resp.json()
+
+
+@pytest.fixture
+async def manager_headers(manager_tokens: dict) -> dict[str, str]:
+    return {"Authorization": f"Bearer {manager_tokens['access_token']}"}

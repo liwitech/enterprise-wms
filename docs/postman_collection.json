@@ -1,0 +1,565 @@
+{
+  "info": {
+    "name": "Enterprise WMS API",
+    "description": "Enterprise Work Management System — complete API collection",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "0.1.0"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8000/api", "type": "string" },
+    { "key": "accessToken", "value": "", "type": "string" },
+    { "key": "refreshToken", "value": "", "type": "string" },
+    { "key": "projectId", "value": "", "type": "string" },
+    { "key": "taskId", "value": "", "type": "string" },
+    { "key": "entryId", "value": "", "type": "string" },
+    { "key": "sprintId", "value": "", "type": "string" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+  },
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/health",
+            "description": "Kiểm tra trạng thái hệ thống"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "pm.collectionVariables.set('accessToken', json.access_token);",
+                  "pm.collectionVariables.set('refreshToken', json.refresh_token);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/login",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@tsv.vn\",\n  \"password\": \"Password123!\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/refresh",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh_token\": \"{{refreshToken}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/logout",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh_token\": \"{{refreshToken}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Current User",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/auth/me"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Projects",
+      "item": [
+        {
+          "name": "List Projects",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/projects?page=1&per_page=20",
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "per_page", "value": "20" },
+                { "key": "status", "value": "IN_PROGRESS", "disabled": true },
+                { "key": "priority", "value": "HIGH", "disabled": true },
+                { "key": "search", "value": "", "disabled": true },
+                { "key": "sort", "value": "created_at", "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Project",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.data) pm.collectionVariables.set('projectId', json.data.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/projects",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"org_id\": \"{{orgId}}\",\n  \"code\": \"PROJ001\",\n  \"name\": \"Platform Upgrade\",\n  \"owner_user_id\": \"{{userId}}\",\n  \"description\": \"Nâng cấp nền tảng\",\n  \"status\": \"PLANNING\",\n  \"priority\": \"HIGH\",\n  \"project_type\": \"AGILE\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Project Detail",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/projects/{{projectId}}"
+          }
+        },
+        {
+          "name": "Update Project",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/projects/{{projectId}}",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Project Name\",\n  \"status\": \"IN_PROGRESS\",\n  \"progress_percent\": 25\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Project",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/projects/{{projectId}}"
+          }
+        },
+        {
+          "name": "Get Project Dashboard",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/projects/{{projectId}}/dashboard"
+          }
+        },
+        {
+          "name": "Add Member",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/projects/{{projectId}}/members",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user_id\": \"{{targetUserId}}\",\n  \"role\": \"MEMBER\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Remove Member",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/projects/{{projectId}}/members/{{targetUserId}}"
+          }
+        },
+        {
+          "name": "List Sprints",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/projects/{{projectId}}/sprints"
+          }
+        },
+        {
+          "name": "Create Sprint",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.data) pm.collectionVariables.set('sprintId', json.data.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/projects/{{projectId}}/sprints",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"project_id\": \"{{projectId}}\",\n  \"name\": \"Sprint 1\",\n  \"goal\": \"Release MVP\",\n  \"start_date\": \"2026-06-01\",\n  \"end_date\": \"2026-06-14\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Activate Sprint",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/projects/{{projectId}}/sprints/{{sprintId}}/activate"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tasks",
+      "item": [
+        {
+          "name": "List Tasks",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/tasks?project_id={{projectId}}&page=1&per_page=20",
+              "query": [
+                { "key": "project_id", "value": "{{projectId}}" },
+                { "key": "status", "value": "TODO", "disabled": true },
+                { "key": "priority", "value": "HIGH", "disabled": true },
+                { "key": "is_overdue", "value": "true", "disabled": true },
+                { "key": "page", "value": "1" },
+                { "key": "per_page", "value": "20" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Task",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.data) pm.collectionVariables.set('taskId', json.data.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/tasks",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"project_id\": \"{{projectId}}\",\n  \"title\": \"Implement login API\",\n  \"description\": \"Implement JWT-based login endpoint\",\n  \"priority\": \"HIGH\",\n  \"estimated_hours\": 8,\n  \"tags\": [\"backend\", \"auth\"]\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Task Detail",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/tasks/{{taskId}}"
+          }
+        },
+        {
+          "name": "Update Task",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/tasks/{{taskId}}",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated task title\",\n  \"priority\": \"CRITICAL\",\n  \"description\": \"Updated description\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Task Status (Kanban)",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/tasks/{{taskId}}/status",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"IN_PROGRESS\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Add Comment",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/tasks/{{taskId}}/comments",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Looks good to me! Ready for review.\"\n}"
+            }
+          }
+        },
+        {
+          "name": "List Comments",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/tasks/{{taskId}}/comments?page=1&per_page=20",
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "per_page", "value": "20" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Timesheets",
+      "item": [
+        {
+          "name": "List Entries",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/timesheets?page=1&per_page=20",
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "per_page", "value": "20" },
+                { "key": "year", "value": "2026", "disabled": true },
+                { "key": "month", "value": "6", "disabled": true },
+                { "key": "status", "value": "DRAFT", "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Entry",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.data) pm.collectionVariables.set('entryId', json.data.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/timesheets",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"task_id\": \"{{taskId}}\",\n  \"work_date\": \"2026-06-04\",\n  \"hours_logged\": 7.5,\n  \"description\": \"Implemented login API and unit tests\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Entry",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/timesheets/{{entryId}}",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"hours_logged\": 8.0,\n  \"description\": \"Updated description\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Entry",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/timesheets/{{entryId}}"
+          }
+        },
+        {
+          "name": "Submit Entries",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/timesheets/submit",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"entry_ids\": [\"{{entryId}}\"]\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Summary",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/timesheets/summary?year=2026&month=6",
+              "query": [
+                { "key": "year", "value": "2026" },
+                { "key": "month", "value": "6" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Pending (Manager)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/timesheets/pending?page=1&per_page=20",
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "per_page", "value": "20" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Approve Entry",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/timesheets/{{entryId}}/approve"
+          }
+        },
+        {
+          "name": "Reject Entry",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/timesheets/{{entryId}}/reject",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reject_reason\": \"Missing task description. Please add more detail.\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Batch Approve",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/timesheets/approve-batch",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"entry_ids\": [\"{{entryId}}\"]\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reports",
+      "item": [
+        {
+          "name": "Timesheet Report (JSON)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/reports/timesheet?year=2026&month=6",
+              "query": [
+                { "key": "year", "value": "2026" },
+                { "key": "month", "value": "6" },
+                { "key": "format", "value": "json" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Timesheet Report (CSV)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/reports/timesheet?year=2026&month=6&format=csv",
+              "query": [
+                { "key": "year", "value": "2026" },
+                { "key": "month", "value": "6" },
+                { "key": "format", "value": "csv" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Weekly Summary Report",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/reports/timesheet/weekly-summary"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Dashboard",
+      "item": [
+        {
+          "name": "Executive Dashboard (Current Month)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/dashboard/executive?period=current_month",
+              "query": [
+                { "key": "period", "value": "current_month" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Executive Dashboard (Current Quarter)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/dashboard/executive?period=current_quarter",
+              "query": [
+                { "key": "period", "value": "current_quarter" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Executive Dashboard (Custom Range)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/dashboard/executive?period=custom&date_from=2026-01-01&date_to=2026-03-31",
+              "query": [
+                { "key": "period", "value": "custom" },
+                { "key": "date_from", "value": "2026-01-01" },
+                { "key": "date_to", "value": "2026-03-31" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Departments",
+      "item": [
+        {
+          "name": "List Departments",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/departments"
+          }
+        }
+      ]
+    }
+  ]
+}

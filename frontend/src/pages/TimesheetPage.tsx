@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useBlocker } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import {
   ChevronLeft, ChevronRight, Plus, Send, CheckCircle2,
@@ -81,7 +81,7 @@ function SubmitDialog({ draftCount, rejectedCount, hasOverhour, isSubmitting, on
           <button
             onClick={onConfirm}
             disabled={isSubmitting}
-            className="flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-60"
+            className="flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-60"
           >
             {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
             Nộp
@@ -156,7 +156,7 @@ function AddRowModal({ onAdd, onClose }: AddRowModalProps) {
             <select
               value={projectId}
               onChange={(e) => { setProjectId(e.target.value); setTaskId('') }}
-              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-indigo-300 focus:outline-none"
+              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-red-300 focus:outline-none"
             >
               <option value="">— Chọn dự án —</option>
               {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
@@ -168,7 +168,7 @@ function AddRowModal({ onAdd, onClose }: AddRowModalProps) {
               value={taskId}
               onChange={e => setTaskId(e.target.value)}
               disabled={!projectId}
-              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-indigo-300 focus:outline-none disabled:bg-slate-50 disabled:text-slate-400"
+              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-red-300 focus:outline-none disabled:bg-slate-50 disabled:text-slate-400"
             >
               <option value="">— Chọn công việc —</option>
               {tasks.map(t => <option key={t.id} value={t.id}>{t.title}</option>)}
@@ -182,7 +182,7 @@ function AddRowModal({ onAdd, onClose }: AddRowModalProps) {
           <button
             disabled={!taskId}
             onClick={() => { onAdd(taskId); onClose() }}
-            className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+            className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
           >
             Thêm dòng
           </button>
@@ -265,12 +265,6 @@ export default function TimesheetPage() {
     submitWeek,
     isSubmitting,
   } = useTimesheetWeek(weekStart)
-
-  // Navigation blocker
-  const blocker = useBlocker(
-    ({ currentLocation, nextLocation }) =>
-      hasPendingSaves && currentLocation.pathname !== nextLocation.pathname,
-  )
 
   // Browser unload guard
   useEffect(() => {
@@ -359,7 +353,7 @@ export default function TimesheetPage() {
               <button
                 onClick={() => setShowSubmitConfirm(true)}
                 disabled={isSubmitting || entries.filter(e => e.status === 'DRAFT' || e.status === 'REJECTED').length === 0}
-                className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+                className="flex items-center gap-1.5 rounded-lg bg-red-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
               >
                 <Send className="h-4 w-4" />
                 Nộp tuần này
@@ -373,7 +367,7 @@ export default function TimesheetPage() {
       <div className="flex-1 overflow-y-auto p-6">
         {isLoading ? (
           <div className="flex h-40 items-center justify-center">
-            <Loader2 className="h-6 w-6 animate-spin text-indigo-500" />
+            <Loader2 className="h-6 w-6 animate-spin text-red-500" />
           </div>
         ) : (
           <div className="flex flex-col lg:flex-row gap-6">
@@ -427,12 +421,6 @@ export default function TimesheetPage() {
         />
       )}
 
-      {blocker.state === 'blocked' && (
-        <BlockerDialog
-          onProceed={() => blocker.proceed()}
-          onStay={() => blocker.reset()}
-        />
-      )}
     </div>
   )
 }

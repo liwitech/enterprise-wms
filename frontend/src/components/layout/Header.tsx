@@ -32,7 +32,7 @@ export default function Header() {
       <div className="flex items-center gap-3">
         <NotificationBell />
         <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-sm font-semibold text-white">
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-600 text-sm font-semibold text-white">
             {user?.full_name?.charAt(0).toUpperCase()}
           </div>
           <div className="hidden sm:block">

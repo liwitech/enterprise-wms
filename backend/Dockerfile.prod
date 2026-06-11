@@ -1,0 +1,29 @@
+FROM python:3.11-slim
+
+# Install only required system dependency
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends libpq-dev curl && \
+    rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Create non-root user
+RUN groupadd -g 1001 appuser && \
+    useradd -u 1001 -g appuser -s /bin/bash -m appuser
+
+# Install Python dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application code
+COPY . .
+
+# Make entrypoint executable
+RUN chmod +x /app/entrypoint.sh
+
+# Switch to non-root user
+USER appuser
+
+EXPOSE 8000
+
+ENTRYPOINT ["/app/entrypoint.sh"]

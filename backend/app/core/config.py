@@ -18,6 +18,13 @@ class Settings(BaseSettings):
 
     CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:5173"]
 
+    # WSO2 SSO
+    WSO2_BASE_URL: str = "https://login-test.hyundai.thanhcong.vn"
+    WSO2_CLIENT_ID: str = ""
+    WSO2_CLIENT_SECRET: str = ""
+    SSO_REDIRECT_URI: str = "http://localhost:3000/auth/callback"
+    SSO_VERIFY_SSL: bool = False  # False for test env with self-signed cert
+
     @field_validator("CORS_ORIGINS", mode="before")
     @classmethod
     def parse_cors_origins(cls, v):

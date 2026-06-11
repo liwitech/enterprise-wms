@@ -90,13 +90,13 @@ export default function DashboardPage() {
           icon={FolderKanban}
           label="Tổng dự án"
           value={projectsResp?.meta?.total ?? 0}
-          color="bg-blue-500"
+          color="bg-red-600"
         />
         <StatCard
           icon={CheckSquare}
           label="Đang thực hiện"
           value={inProgressTasks}
-          color="bg-indigo-500"
+          color="bg-red-500"
         />
         <StatCard
           icon={AlertTriangle}
@@ -117,7 +117,7 @@ export default function DashboardPage() {
         <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
           <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
             <h3 className="font-semibold text-gray-800">Dự án gần đây</h3>
-            <Link to="/projects" className="text-sm text-blue-600 hover:underline">
+            <Link to="/projects" className="text-sm text-red-600 hover:underline">
               Xem tất cả
             </Link>
           </div>
@@ -154,7 +154,7 @@ export default function DashboardPage() {
         <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
           <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
             <h3 className="font-semibold text-gray-800">Công việc của tôi</h3>
-            <Link to="/tasks" className="text-sm text-blue-600 hover:underline">
+            <Link to="/tasks" className="text-sm text-red-600 hover:underline">
               Xem tất cả
             </Link>
           </div>

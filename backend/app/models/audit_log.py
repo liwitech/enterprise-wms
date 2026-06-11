@@ -1,6 +1,6 @@
 import uuid
-from sqlalchemy import Column, String, Integer, DateTime, func
-from sqlalchemy.dialects.postgresql import UUID as PGUUID
+from sqlalchemy import Column, String, Integer, DateTime, Text, func
+from sqlalchemy.dialects.postgresql import UUID as PGUUID, JSONB
 from app.db.session import Base
 
 
@@ -15,4 +15,10 @@ class AuditLog(Base):
     duration_ms = Column(Integer, nullable=False)
     ip_address = Column(String(45), nullable=True)
     user_agent = Column(String(500), nullable=True)
+    # Resource tracking
+    action = Column(String(50), nullable=True, index=True)
+    resource_type = Column(String(100), nullable=True, index=True)
+    resource_id = Column(String(255), nullable=True)
+    old_value = Column(JSONB, nullable=True)
+    new_value = Column(JSONB, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False, index=True)

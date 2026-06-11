@@ -19,6 +19,8 @@ from app.schemas.user import UserMeRead, ProjectRoleInfo
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
+_ERR = {"description": "Lỗi xác thực hoặc phân quyền"}
+
 # ── Permission map ────────────────────────────────────────────────────────────
 
 _PERMISSIONS: dict[UserRoleEnum, list[str]] = {
@@ -66,7 +68,20 @@ class AccessTokenResponse(BaseModel):
 
 # ── Endpoints ─────────────────────────────────────────────────────────────────
 
-@router.post("/login", response_model=TokenPairResponse)
+@router.post(
+    "/login",
+    response_model=TokenPairResponse,
+    summary="Đăng nhập",
+    description=(
+        "Xác thực bằng email và mật khẩu. Trả về `access_token` (JWT, 8h) và "
+        "`refresh_token` (UUID, 30 ngày). Rate limit: 5 lần/phút mỗi IP."
+    ),
+    responses={
+        401: {"description": "Email hoặc mật khẩu không đúng"},
+        422: {"description": "Định dạng email không hợp lệ"},
+        429: {"description": "Quá giới hạn thử đăng nhập"},
+    },
+)
 async def login(
     request: Request,
     body: LoginRequest,
@@ -103,7 +118,15 @@ async def login(
     return TokenPairResponse(access_token=access_token, refresh_token=refresh_token)
 
 
-@router.post("/refresh", response_model=AccessTokenResponse)
+@router.post(
+    "/refresh",
+    response_model=AccessTokenResponse,
+    summary="Làm mới access token",
+    description="Đổi `refresh_token` hợp lệ lấy `access_token` mới. Refresh token không bị thu hồi.",
+    responses={
+        401: {"description": "Refresh token không hợp lệ hoặc đã hết hạn"},
+    },
+)
 async def refresh(body: RefreshRequest):
     user_id = await verify_refresh_token(body.refresh_token)
     if not user_id:
@@ -114,7 +137,16 @@ async def refresh(body: RefreshRequest):
     return AccessTokenResponse(access_token=create_access_token(user_id))
 
 
-@router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
+@router.post(
+    "/logout",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Đăng xuất",
+    description="Thu hồi `refresh_token`. Access token hiện tại vẫn hợp lệ đến khi hết hạn tự nhiên.",
+    responses={
+        204: {"description": "Đăng xuất thành công"},
+        401: {"description": "Chưa xác thực"},
+    },
+)
 async def logout(
     body: RefreshRequest,
     _: User = Depends(get_current_user),
@@ -122,7 +154,16 @@ async def logout(
     await revoke_refresh_token(body.refresh_token)
 
 
-@router.get("/me", response_model=UserMeRead)
+@router.get(
+    "/me",
+    response_model=UserMeRead,
+    summary="Thông tin người dùng hiện tại",
+    description="Trả về thông tin người dùng đang đăng nhập kèm danh sách quyền và vai trò trong từng dự án.",
+    responses={
+        200: {"description": "Thông tin người dùng và quyền hạn"},
+        401: {"description": "Chưa xác thực hoặc token không hợp lệ"},
+    },
+)
 async def me(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),

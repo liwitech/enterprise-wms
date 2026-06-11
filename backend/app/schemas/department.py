@@ -1,12 +1,14 @@
 from uuid import UUID
 from datetime import datetime
 from pydantic import BaseModel, ConfigDict
+from app.models.enums import DeptTypeEnum
 
 
 class DepartmentBase(BaseModel):
     org_id: UUID
     name: str
     code: str
+    dept_type: DeptTypeEnum | None = None
     parent_dept_id: UUID | None = None
     manager_user_id: UUID | None = None
 
@@ -31,3 +33,6 @@ class DepartmentRead(DepartmentBase):
 
 class DepartmentTree(DepartmentRead):
     children: list["DepartmentTree"] = []
+
+
+DepartmentTree.model_rebuild()

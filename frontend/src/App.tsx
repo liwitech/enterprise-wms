@@ -13,6 +13,8 @@ import TimesheetHistoryPage from '@/pages/TimesheetHistoryPage'
 import PendingApprovalsPage from '@/pages/PendingApprovalsPage'
 import ApprovalsPage from '@/pages/ApprovalsPage'
 import ReportsPage from '@/pages/ReportsPage'
+import AdminPage from '@/pages/AdminPage'
+import SsoCallbackPage from '@/pages/SsoCallbackPage'
 import { useAuthStore } from '@/stores/authStore'
 
 function DashboardIndex() {
@@ -29,6 +31,7 @@ export default function App() {
     <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/auth/callback" element={<SsoCallbackPage />} />
 
       <Route
         element={
@@ -65,6 +68,14 @@ export default function App() {
           element={
             <ProtectedRoute allowedRoles={['SUPER_ADMIN', 'ADMIN', 'MANAGER']}>
               <ReportsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute allowedRoles={['SUPER_ADMIN', 'ADMIN']}>
+              <AdminPage />
             </ProtectedRoute>
           }
         />

@@ -4,6 +4,7 @@ from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import relationship
 from app.db.session import Base
 from app.models.base import CreatedAtMixin
+from app.models.enums import DeptTypeEnum
 
 
 class Department(CreatedAtMixin, Base):
@@ -14,6 +15,7 @@ class Department(CreatedAtMixin, Base):
     parent_dept_id = Column(PGUUID(as_uuid=True), ForeignKey("departments.id"), nullable=True, index=True)
     name = Column(String(255), nullable=False)
     code = Column(String(50), nullable=False)
+    dept_type = Column(String(20), nullable=True, default=DeptTypeEnum.PHONG.value)
     manager_user_id = Column(
         PGUUID(as_uuid=True),
         ForeignKey("users.id", use_alter=True, name="fk_dept_manager"),

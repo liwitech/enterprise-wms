@@ -138,7 +138,7 @@ export function useTimesheetWeek(weekStart: Date) {
         )
 
         const localHours = localEdits.get(cellKey)
-        const hours = localHours !== undefined ? localHours : (entry?.hours_logged ?? 0)
+        const hours = localHours !== undefined ? localHours : Number(entry?.hours_logged ?? 0)
         const status: TimesheetStatus = entry?.status ?? 'DRAFT'
         const rejectReason = entry?.reject_reason ?? undefined
 

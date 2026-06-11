@@ -95,14 +95,14 @@ export default function OverviewTab({ project, dashboard, isLoading }: Props) {
               icon={Clock}
               label="Giờ đã ghi nhận"
               value={`${(project as any).actual_hours?.toFixed(1) ?? 0}h`}
-              color="bg-indigo-500"
+              color="bg-red-500"
             />
             <MetricCard
               icon={CalendarClock}
               label="Ngày còn lại"
               value={daysRemaining !== null ? Math.max(daysRemaining, 0) : '—'}
               sub={daysRemaining !== null && daysRemaining < 0 ? `Quá hạn ${Math.abs(daysRemaining)} ngày` : undefined}
-              color={daysRemaining !== null && daysRemaining < 0 ? 'bg-red-500' : 'bg-blue-500'}
+              color={daysRemaining !== null && daysRemaining < 0 ? 'bg-red-500' : 'bg-red-600'}
             />
           </>
         )}
@@ -185,7 +185,7 @@ export default function OverviewTab({ project, dashboard, isLoading }: Props) {
           <ul className="space-y-3">
             {dashboard.recent_activities.slice(0, 10).map((a, i) => (
               <li key={i} className="flex items-start gap-3 text-sm">
-                <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-400" />
+                <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-red-400" />
                 <div className="flex-1">
                   <span className="text-slate-700">{a.message}</span>
                   <span className="ml-2 text-xs text-slate-400">
@@ -205,7 +205,7 @@ function MilestoneRow({ milestone: m }: { milestone: Milestone }) {
   const style = MILESTONE_STYLE[m.status] ?? { cls: 'bg-gray-100 text-gray-600', label: m.status }
   return (
     <div className="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2">
-      <span className="text-sm text-slate-700 font-medium">{m.title}</span>
+      <span className="text-sm text-slate-700 font-medium">{m.name}</span>
       <div className="flex items-center gap-2 shrink-0">
         {m.due_date && (
           <span className="text-xs text-slate-400">

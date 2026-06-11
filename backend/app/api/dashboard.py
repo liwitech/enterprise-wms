@@ -31,12 +31,32 @@ def _cache_key(
     return f"exec:{org_id}:{dept_id or 'all'}:{period}:{d_from or ''}:{d_to or ''}"
 
 
-@router.get("/executive", response_model=ApiResponse[ExecutiveDashboardResponse])
+@router.get(
+    "/executive",
+    response_model=ApiResponse[ExecutiveDashboardResponse],
+    summary="Dashboard điều hành",
+    description=(
+        "Trả về tổng quan toàn tổ chức cho cấp quản lý: KPI tổng hợp, "
+        "danh sách dự án với health status (ON_TRACK/AT_RISK/OVERDUE), "
+        "cảnh báo ưu tiên, phân bổ tải công việc nhân sự, "
+        "và số lượng chấm công chờ duyệt. "
+        "Kết quả được cache Redis 10 phút theo (org, dept, period). "
+        "Manager tự động bị giới hạn về phòng ban của mình."
+    ),
+    responses={
+        401: {"description": "Chưa xác thực"},
+        403: {"description": "Yêu cầu role MANAGER, ADMIN, hoặc SUPER_ADMIN"},
+        422: {"description": "period không hợp lệ"},
+    },
+)
 async def executive_dashboard(
-    dept_id: UUID | None = Query(None),
-    period: Literal["current_month", "current_quarter", "custom"] = Query("current_month"),
-    date_from: date | None = Query(None),
-    date_to: date | None = Query(None),
+    dept_id: UUID | None = Query(None, description="Lọc theo phòng ban (Admin only)"),
+    period: Literal["current_month", "current_quarter", "custom"] = Query(
+        "current_month",
+        description="Kỳ báo cáo: current_month, current_quarter, hoặc custom (cần date_from/date_to)",
+    ),
+    date_from: date | None = Query(None, description="Ngày bắt đầu (chỉ dùng khi period=custom)"),
+    date_to: date | None = Query(None, description="Ngày kết thúc (chỉ dùng khi period=custom)"),
     current_user: User = Depends(
         require_role(UserRoleEnum.SUPER_ADMIN, UserRoleEnum.ADMIN, UserRoleEnum.MANAGER)
     ),

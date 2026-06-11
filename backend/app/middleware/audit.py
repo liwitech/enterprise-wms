@@ -1,4 +1,7 @@
+import json
+import re
 import time
+from typing import Any
 from uuid import UUID
 
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -12,7 +15,11 @@ from app.models.audit_log import AuditLog
 _SKIP_PATHS = frozenset({
     "/api/docs", "/api/redoc", "/api/openapi.json",
     "/docs", "/redoc", "/openapi.json",
+    "/metrics",
 })
+
+# Match paths like /api/projects/abc123 → resource_type=projects, resource_id=abc123
+_RESOURCE_RE = re.compile(r"^/api/(?P<resource>[a-z_]+)/(?P<id>[^/]+)")
 
 
 class AuditLogMiddleware(BaseHTTPMiddleware):
@@ -23,9 +30,29 @@ class AuditLogMiddleware(BaseHTTPMiddleware):
         start = time.perf_counter()
         user_id = _extract_user_id(request)
 
+        # Capture request body for mutation methods
+        new_value: Any = None
+        if request.method in {"POST", "PUT", "PATCH"}:
+            try:
+                body_bytes = await request.body()
+                if body_bytes:
+                    new_value = json.loads(body_bytes)
+            except Exception:
+                pass
+
         response = await call_next(request)
 
         duration_ms = int((time.perf_counter() - start) * 1000)
+
+        # Parse resource info from URL path
+        resource_type: str | None = None
+        resource_id: str | None = None
+        m = _RESOURCE_RE.match(request.url.path)
+        if m:
+            resource_type = m.group("resource")
+            resource_id = m.group("id")
+
+        action = _method_to_action(request.method)
 
         await _write_log(
             user_id=user_id,
@@ -35,9 +62,23 @@ class AuditLogMiddleware(BaseHTTPMiddleware):
             duration_ms=duration_ms,
             ip_address=request.client.host if request.client else None,
             user_agent=request.headers.get("user-agent"),
+            action=action,
+            resource_type=resource_type,
+            resource_id=resource_id,
+            new_value=new_value,
         )
 
         return response
+
+
+def _method_to_action(method: str) -> str:
+    return {
+        "POST": "CREATE",
+        "PUT": "UPDATE",
+        "PATCH": "UPDATE",
+        "DELETE": "DELETE",
+        "GET": "READ",
+    }.get(method.upper(), method.upper())
 
 
 def _extract_user_id(request: Request) -> str | None:
@@ -57,6 +98,11 @@ async def _write_log(
     duration_ms: int,
     ip_address: str | None,
     user_agent: str | None,
+    action: str | None = None,
+    resource_type: str | None = None,
+    resource_id: str | None = None,
+    old_value: Any = None,
+    new_value: Any = None,
 ) -> None:
     try:
         uid: UUID | None = None
@@ -77,7 +123,11 @@ async def _write_log(
                         duration_ms=duration_ms,
                         ip_address=ip_address,
                         user_agent=user_agent,
+                        action=action,
+                        resource_type=resource_type,
+                        resource_id=resource_id,
+                        new_value=new_value,
                     )
                 )
     except Exception:
-        pass  # logging must never break the app
+        pass

@@ -257,11 +257,8 @@ class ProjectService:
 
         recent_activities = [
             RecentActivity(
-                task_id=t.id,
-                task_title=t.title,
-                status=t.status.value,
-                updated_at=t.updated_at,
-                assignee_name=t.assignee.full_name if t.assignee else None,
+                message=t.title + (f" — {t.assignee.full_name}" if t.assignee else ""),
+                timestamp=t.updated_at,
             )
             for t in recent_tasks
         ]

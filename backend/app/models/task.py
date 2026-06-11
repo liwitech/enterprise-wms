@@ -1,5 +1,5 @@
 import uuid
-from sqlalchemy import Column, String, Text, Enum, Float, Date, ForeignKey, Index
+from sqlalchemy import Boolean, Column, Integer, String, Text, Enum, Float, Date, DateTime, ForeignKey, Index
 from sqlalchemy.dialects.postgresql import UUID as PGUUID, JSONB
 from sqlalchemy.orm import relationship
 from app.db.session import Base
@@ -16,6 +16,7 @@ class Task(TimestampMixin, SoftDeleteMixin, Base):
     )
 
     id = Column(PGUUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    task_code = Column(String(20), nullable=False, unique=True)
     project_id = Column(PGUUID(as_uuid=True), ForeignKey("projects.id"), nullable=False)
     task_group_id = Column(PGUUID(as_uuid=True), ForeignKey("task_groups.id"), nullable=True)
     sprint_id = Column(PGUUID(as_uuid=True), ForeignKey("sprints.id"), nullable=True)
@@ -30,7 +31,18 @@ class Task(TimestampMixin, SoftDeleteMixin, Base):
     due_date = Column(Date, nullable=True)
     estimated_hours = Column(Float, nullable=True)
     actual_hours = Column(Float, default=0.0, nullable=True)
+    completed_at = Column(DateTime(timezone=True), nullable=True)
     tags = Column(JSONB, nullable=True)
+
+    # Recurrence
+    is_recurring = Column(Boolean, nullable=False, default=False, server_default='false')
+    recurrence_type = Column(String(20), nullable=True)       # DAILY | WEEKLY | MONTHLY | YEARLY
+    recurrence_interval = Column(Integer, nullable=True, default=1)
+    recurrence_days = Column(JSONB, nullable=True)             # [0..6] weekday list for WEEKLY
+    recurrence_end_type = Column(String(10), nullable=True)    # NEVER | COUNT | UNTIL
+    recurrence_count = Column(Integer, nullable=True)
+    recurrence_until = Column(Date, nullable=True)
+    recurrence_parent_id = Column(PGUUID(as_uuid=True), ForeignKey('tasks.id', ondelete='SET NULL'), nullable=True)
 
     project = relationship("Project", back_populates="tasks")
     task_group = relationship("TaskGroup", back_populates="tasks")

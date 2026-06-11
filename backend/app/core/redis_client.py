@@ -11,6 +11,8 @@ REFRESH_PREFIX = "refresh:"
 RATE_LIMIT_PREFIX = "rate:login:"
 DASHBOARD_PREFIX = "dashboard:"
 TASK_STATUS_CHANNEL = "task:status_changed"
+SSO_STATE_PREFIX = "sso:state:"
+SSO_STATE_TTL = 300  # 5 minutes
 
 REFRESH_TTL = int(timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS).total_seconds())
 DASHBOARD_TTL = 300  # 5 minutes
@@ -38,6 +40,23 @@ async def verify_refresh_token(token: str) -> Optional[str]:
 async def revoke_refresh_token(token: str) -> None:
     async with _client() as r:
         await r.delete(f"{REFRESH_PREFIX}{token}")
+
+
+# ── SSO State ─────────────────────────────────────────────────────────────────
+
+async def store_sso_state(state: str) -> None:
+    async with _client() as r:
+        await r.setex(f"{SSO_STATE_PREFIX}{state}", SSO_STATE_TTL, "1")
+
+
+async def verify_and_consume_sso_state(state: str) -> bool:
+    async with _client() as r:
+        key = f"{SSO_STATE_PREFIX}{state}"
+        val = await r.get(key)
+        if val:
+            await r.delete(key)
+            return True
+        return False
 
 
 # ── Rate Limiting ─────────────────────────────────────────────────────────────
