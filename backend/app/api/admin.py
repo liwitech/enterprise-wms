@@ -14,7 +14,7 @@ from app.models.department import Department
 from app.models.enums import UserRoleEnum
 from app.models.organization import Organization
 from app.models.user import User
-from app.schemas.admin import AdminDeptCreate, AdminDeptUpdate, AdminUserCreate, AdminUserUpdate
+from app.schemas.admin import AdminDeptCreate, AdminDeptUpdate, AdminUserCreate, AdminUserUpdate, SsoConfigRead, SsoConfigUpdate
 from app.schemas.common import ApiResponse, ok, paginated
 from app.schemas.department import DepartmentRead, DepartmentTree
 from app.schemas.organization import OrganizationRead, OrganizationUpdate
@@ -74,6 +74,38 @@ async def update_organization(
     await db.commit()
     await db.refresh(org)
     return ok(OrganizationRead.model_validate(org))
+
+
+# ── SSO Configuration ─────────────────────────────────────────────────────────
+
+_SUPER_ADMIN = require_role(UserRoleEnum.SUPER_ADMIN)
+
+
+@router.get("/sso-config", response_model=ApiResponse[SsoConfigRead])
+async def get_sso_config(
+    current_user: User = Depends(_SUPER_ADMIN),
+    db: AsyncSession = Depends(get_db),
+):
+    org = await db.get(Organization, current_user.org_id)
+    if not org:
+        raise HTTPException(404, "Organization not found")
+    return ok(SsoConfigRead.model_validate(org))
+
+
+@router.put("/sso-config", response_model=ApiResponse[SsoConfigRead])
+async def update_sso_config(
+    body: SsoConfigUpdate,
+    current_user: User = Depends(_SUPER_ADMIN),
+    db: AsyncSession = Depends(get_db),
+):
+    org = await db.get(Organization, current_user.org_id)
+    if not org:
+        raise HTTPException(404, "Organization not found")
+    for field, value in body.model_dump(exclude_none=True).items():
+        setattr(org, field, value)
+    await db.commit()
+    await db.refresh(org)
+    return ok(SsoConfigRead.model_validate(org))
 
 
 # ── Departments ───────────────────────────────────────────────────────────────

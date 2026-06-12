@@ -77,6 +77,11 @@ export const adminService = {
   deleteUser: (id: string) =>
     api.delete<ApiResponse<null>>(`/api/admin/users/${id}`),
 
+  getSsoConfig: () =>
+    api.get<ApiResponse<SsoConfig>>('/api/admin/sso-config'),
+  updateSsoConfig: (body: SsoConfigUpdate) =>
+    api.put<ApiResponse<SsoConfig>>('/api/admin/sso-config', body),
+
   downloadImportTemplate: () =>
     api.get('/api/admin/users/import/template', { responseType: 'blob' }),
   importUsers: (file: File) => {
@@ -86,6 +91,23 @@ export const adminService = {
       headers: { 'Content-Type': 'multipart/form-data' },
     })
   },
+}
+
+export interface SsoConfig {
+  sso_enabled: boolean
+  sso_provider_url: string | null
+  sso_client_id: string | null
+  sso_redirect_uri: string | null
+  sso_verify_ssl: boolean
+}
+
+export interface SsoConfigUpdate {
+  sso_enabled?: boolean
+  sso_provider_url?: string | null
+  sso_client_id?: string | null
+  sso_client_secret?: string | null
+  sso_redirect_uri?: string | null
+  sso_verify_ssl?: boolean
 }
 
 export interface ImportErrorRow {

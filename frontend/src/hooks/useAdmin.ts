@@ -9,6 +9,7 @@ import {
   type OrgUpdate,
   type UserListParams,
   type ImportResult,
+  type SsoConfigUpdate,
 } from '@/services/adminService'
 
 export function useAdminOrg() {
@@ -140,6 +141,27 @@ export function useDeleteUser() {
     },
     onError: (e: any) =>
       toast.error(e.response?.data?.detail || 'Không thể xóa'),
+  })
+}
+
+export function useSsoConfig() {
+  return useQuery({
+    queryKey: ['admin', 'sso-config'],
+    queryFn: () => adminService.getSsoConfig().then((r) => r.data.data!),
+  })
+}
+
+export function useUpdateSsoConfig() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (body: SsoConfigUpdate) =>
+      adminService.updateSsoConfig(body).then((r) => r.data.data!),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin', 'sso-config'] })
+      toast.success('Đã lưu cấu hình SSO')
+    },
+    onError: (e: any) =>
+      toast.error(e.response?.data?.detail || 'Không thể lưu cấu hình SSO'),
   })
 }
 

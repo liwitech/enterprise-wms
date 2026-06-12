@@ -1,5 +1,5 @@
 from uuid import UUID
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, HttpUrl
 from app.models.enums import UserRoleEnum, DeptTypeEnum
 
 
@@ -35,3 +35,23 @@ class AdminUserUpdate(BaseModel):
     role: UserRoleEnum | None = None
     is_active: bool | None = None
     password: str | None = None
+
+
+class SsoConfigRead(BaseModel):
+    sso_enabled: bool
+    sso_provider_url: str | None
+    sso_client_id: str | None
+    sso_redirect_uri: str | None
+    sso_verify_ssl: bool
+    # client_secret is intentionally omitted from read response
+
+    model_config = {"from_attributes": True}
+
+
+class SsoConfigUpdate(BaseModel):
+    sso_enabled: bool | None = None
+    sso_provider_url: str | None = None
+    sso_client_id: str | None = None
+    sso_client_secret: str | None = None
+    sso_redirect_uri: str | None = None
+    sso_verify_ssl: bool | None = None

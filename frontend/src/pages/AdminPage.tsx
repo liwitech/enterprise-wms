@@ -4,6 +4,7 @@ import {
   ChevronDown, ChevronRight, Loader2, Search, X,
   UserCheck, UserX, Eye, EyeOff, Shield, KeyRound,
   UserCog, UserPlus, Upload, Download, CheckCircle2, AlertCircle,
+  Link2, ToggleLeft, ToggleRight, Save, Info,
 } from 'lucide-react'
 import { cn } from '@/utils/cn'
 import {
@@ -12,7 +13,9 @@ import {
   useCreateDept, useUpdateDept, useDeleteDept,
   useAdminUsers, useCreateUser, useUpdateUser,
   useToggleUserActive, useDeleteUser, useImportUsers,
+  useSsoConfig, useUpdateSsoConfig,
 } from '@/hooks/useAdmin'
+
 import type { Department, User, UserRole, DeptType } from '@/types'
 import type { AdminDeptCreate, AdminDeptUpdate, AdminUserCreate, AdminUserUpdate, ImportResult } from '@/services/adminService'
 import { adminService } from '@/services/adminService'
@@ -1267,12 +1270,238 @@ function EmployeesTab() {
   )
 }
 
+// ── Tab: Cấu hình SSO ────────────────────────────────────────────────────────
+
+function SsoTab() {
+  const { data: cfg, isLoading } = useSsoConfig()
+  const updateMut = useUpdateSsoConfig()
+
+  const [form, setForm] = useState({
+    sso_enabled: false,
+    sso_provider_url: '',
+    sso_client_id: '',
+    sso_client_secret: '',
+    sso_redirect_uri: '',
+    sso_verify_ssl: false,
+  })
+  const [showSecret, setShowSecret] = useState(false)
+  const [dirty, setDirty] = useState(false)
+
+  // Sync form khi data load xong
+  useState(() => {
+    if (cfg) {
+      setForm({
+        sso_enabled: cfg.sso_enabled,
+        sso_provider_url: cfg.sso_provider_url ?? '',
+        sso_client_id: cfg.sso_client_id ?? '',
+        sso_client_secret: '',
+        sso_redirect_uri: cfg.sso_redirect_uri ?? '',
+        sso_verify_ssl: cfg.sso_verify_ssl,
+      })
+    }
+  })
+
+  function set<K extends keyof typeof form>(key: K, value: (typeof form)[K]) {
+    setForm((f) => ({ ...f, [key]: value }))
+    setDirty(true)
+  }
+
+  async function handleSave(e: React.FormEvent) {
+    e.preventDefault()
+    const body: Record<string, unknown> = {
+      sso_enabled: form.sso_enabled,
+      sso_provider_url: form.sso_provider_url || null,
+      sso_client_id: form.sso_client_id || null,
+      sso_redirect_uri: form.sso_redirect_uri || null,
+      sso_verify_ssl: form.sso_verify_ssl,
+    }
+    if (form.sso_client_secret) body.sso_client_secret = form.sso_client_secret
+    await updateMut.mutateAsync(body as any)
+    setDirty(false)
+    setForm((f) => ({ ...f, sso_client_secret: '' }))
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center gap-2 text-sm text-slate-400">
+        <Loader2 className="h-4 w-4 animate-spin" /> Đang tải...
+      </div>
+    )
+  }
+
+  return (
+    <form onSubmit={handleSave} className="max-w-2xl space-y-6">
+      {/* Header card */}
+      <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="mb-5 flex items-center gap-3">
+          <div className="rounded-xl bg-indigo-100 p-3">
+            <Link2 className="h-5 w-5 text-indigo-600" />
+          </div>
+          <div>
+            <h3 className="font-semibold text-slate-800">Cấu hình SSO / WSO2</h3>
+            <p className="text-xs text-slate-400">
+              Cho phép người dùng đăng nhập qua hệ thống Identity Provider WSO2 của doanh nghiệp
+            </p>
+          </div>
+
+          {/* Enable toggle */}
+          <button
+            type="button"
+            onClick={() => set('sso_enabled', !form.sso_enabled)}
+            className={cn(
+              'ml-auto flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium transition-colors',
+              form.sso_enabled
+                ? 'bg-indigo-600 text-white hover:bg-indigo-700'
+                : 'bg-slate-100 text-slate-500 hover:bg-slate-200',
+            )}
+          >
+            {form.sso_enabled
+              ? <ToggleRight className="h-4 w-4" />
+              : <ToggleLeft className="h-4 w-4" />}
+            {form.sso_enabled ? 'Đang bật' : 'Đang tắt'}
+          </button>
+        </div>
+
+        {!form.sso_enabled && (
+          <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700 flex items-center gap-2">
+            <Info className="h-4 w-4 shrink-0" />
+            SSO hiện đang tắt. Bật SSO để cho phép người dùng đăng nhập bằng tài khoản doanh nghiệp.
+          </div>
+        )}
+      </div>
+
+      {/* Config fields */}
+      <div className={cn(
+        'rounded-xl border border-slate-200 bg-white p-6 shadow-sm space-y-5 transition-opacity',
+        !form.sso_enabled && 'opacity-50 pointer-events-none',
+      )}>
+        <h4 className="text-sm font-semibold text-slate-700">Thông tin kết nối WSO2</h4>
+
+        <Field label="WSO2 Base URL" required>
+          <input
+            className={inputCls}
+            type="url"
+            value={form.sso_provider_url}
+            onChange={(e) => set('sso_provider_url', e.target.value)}
+            placeholder="https://login.company.vn"
+          />
+          <p className="mt-1 text-xs text-slate-400">URL gốc của máy chủ WSO2 Identity Server</p>
+        </Field>
+
+        <div className="grid grid-cols-2 gap-4">
+          <Field label="Client ID" required>
+            <input
+              className={inputCls}
+              value={form.sso_client_id}
+              onChange={(e) => set('sso_client_id', e.target.value)}
+              placeholder="xxxxxxxxxxxxxxxx"
+              autoComplete="off"
+            />
+          </Field>
+
+          <Field label="Client Secret">
+            <div className="relative">
+              <input
+                className={cn(inputCls, 'pr-10')}
+                type={showSecret ? 'text' : 'password'}
+                value={form.sso_client_secret}
+                onChange={(e) => set('sso_client_secret', e.target.value)}
+                placeholder={cfg?.sso_client_id ? '••••••• (để trống nếu không đổi)' : 'Nhập client secret'}
+                autoComplete="new-password"
+              />
+              <button
+                type="button"
+                onClick={() => setShowSecret((v) => !v)}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+              >
+                {showSecret ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
+          </Field>
+        </div>
+
+        <Field label="Redirect URI (Callback URL)" required>
+          <input
+            className={inputCls}
+            type="url"
+            value={form.sso_redirect_uri}
+            onChange={(e) => set('sso_redirect_uri', e.target.value)}
+            placeholder="https://app.company.vn/auth/callback"
+          />
+          <p className="mt-1 text-xs text-slate-400">
+            URL này phải được đăng ký trong cấu hình Service Provider trên WSO2
+          </p>
+        </Field>
+
+        {/* SSL toggle */}
+        <div className="flex items-start justify-between rounded-lg border border-slate-200 bg-slate-50 p-4">
+          <div>
+            <p className="text-sm font-medium text-slate-700">Xác thực SSL</p>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Tắt nếu máy chủ WSO2 dùng self-signed certificate (môi trường test)
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => set('sso_verify_ssl', !form.sso_verify_ssl)}
+            className={cn(
+              'relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus:outline-none',
+              form.sso_verify_ssl ? 'bg-indigo-600' : 'bg-slate-300',
+            )}
+          >
+            <span
+              className={cn(
+                'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition-transform',
+                form.sso_verify_ssl ? 'translate-x-5' : 'translate-x-0',
+              )}
+            />
+          </button>
+        </div>
+      </div>
+
+      {/* OAuth2 endpoints info */}
+      {form.sso_provider_url && form.sso_enabled && (
+        <div className="rounded-xl border border-indigo-100 bg-indigo-50 p-4 space-y-2">
+          <p className="text-xs font-semibold text-indigo-700 mb-2">Endpoints sẽ được sử dụng:</p>
+          {[
+            { label: 'Authorization', path: '/oauth2/authorize' },
+            { label: 'Token', path: '/oauth2/token' },
+            { label: 'UserInfo', path: '/oauth2/userinfo' },
+          ].map(({ label, path }) => (
+            <div key={path} className="flex items-center gap-2 text-xs">
+              <span className="w-24 shrink-0 font-medium text-indigo-600">{label}</span>
+              <code className="flex-1 rounded bg-white/70 px-2 py-0.5 text-slate-600 font-mono truncate">
+                {form.sso_provider_url}{path}
+              </code>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Save button */}
+      <div className="flex justify-end gap-3">
+        <button
+          type="submit"
+          disabled={updateMut.isPending || !dirty}
+          className="flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50 transition"
+        >
+          {updateMut.isPending
+            ? <Loader2 className="h-4 w-4 animate-spin" />
+            : <Save className="h-4 w-4" />}
+          Lưu cấu hình
+        </button>
+      </div>
+    </form>
+  )
+}
+
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
 const TABS = [
   { id: 'org' as const, label: 'Tổ chức', icon: Building2 },
   { id: 'structure' as const, label: 'Cơ cấu tổ chức', icon: Network },
   { id: 'employees' as const, label: 'Người dùng', icon: Users },
+  { id: 'sso' as const, label: 'SSO / Tích hợp', icon: Link2 },
 ]
 
 type TabId = (typeof TABS)[number]['id']
@@ -1316,6 +1545,7 @@ export default function AdminPage() {
         {activeTab === 'org' && <OrgTab />}
         {activeTab === 'structure' && <StructureTab />}
         {activeTab === 'employees' && <EmployeesTab />}
+        {activeTab === 'sso' && <SsoTab />}
       </div>
     </div>
   )

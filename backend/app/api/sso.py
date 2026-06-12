@@ -8,12 +8,34 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
+from app.core.deps import get_current_user
 from app.core.redis_client import store_sso_state, verify_and_consume_sso_state, store_refresh_token
 from app.core.security import create_access_token
 from app.db.session import get_db
+from app.models.organization import Organization
 from app.models.user import User
 
 router = APIRouter(prefix="/auth/sso", tags=["sso"])
+
+
+async def _get_sso_config(org_id, db: AsyncSession) -> dict:
+    """Load SSO config from DB, fallback to env vars if not configured."""
+    org = await db.get(Organization, org_id)
+    if org and org.sso_enabled and org.sso_provider_url and org.sso_client_id:
+        return {
+            "base_url": org.sso_provider_url,
+            "client_id": org.sso_client_id,
+            "client_secret": org.sso_client_secret or settings.WSO2_CLIENT_SECRET,
+            "redirect_uri": org.sso_redirect_uri or settings.SSO_REDIRECT_URI,
+            "verify_ssl": org.sso_verify_ssl,
+        }
+    return {
+        "base_url": settings.WSO2_BASE_URL,
+        "client_id": settings.WSO2_CLIENT_ID,
+        "client_secret": settings.WSO2_CLIENT_SECRET,
+        "redirect_uri": settings.SSO_REDIRECT_URI,
+        "verify_ssl": settings.SSO_VERIFY_SSL,
+    }
 
 
 class SsoAuthorizeResponse(BaseModel):
@@ -37,18 +59,22 @@ class TokenPairResponse(BaseModel):
     summary="Lấy URL đăng nhập SSO",
     description="Tạo state token và trả về URL để redirect người dùng đến WSO2.",
 )
-async def sso_authorize():
+async def sso_authorize(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    cfg = await _get_sso_config(current_user.org_id, db)
     state = secrets.token_urlsafe(32)
     await store_sso_state(state)
 
     params = urlencode({
         "response_type": "code",
-        "client_id": settings.WSO2_CLIENT_ID,
-        "redirect_uri": settings.SSO_REDIRECT_URI,
+        "client_id": cfg["client_id"],
+        "redirect_uri": cfg["redirect_uri"],
         "scope": "openid email profile",
         "state": state,
     })
-    return SsoAuthorizeResponse(url=f"{settings.WSO2_BASE_URL}/oauth2/authorize?{params}")
+    return SsoAuthorizeResponse(url=f"{cfg['base_url']}/oauth2/authorize?{params}")
 
 
 @router.post(
@@ -72,19 +98,28 @@ async def sso_callback(
             "Phiên đăng nhập không hợp lệ hoặc đã hết hạn. Vui lòng thử lại.",
         )
 
-    verify_ssl = settings.SSO_VERIFY_SSL
+    # Load SSO config from DB (or env vars as fallback)
+    # For callback we don't have a logged-in user yet, so we search by email after token exchange
+    # Use env vars config for callback (org resolved after email lookup)
+    cfg = {
+        "base_url": settings.WSO2_BASE_URL,
+        "client_id": settings.WSO2_CLIENT_ID,
+        "client_secret": settings.WSO2_CLIENT_SECRET,
+        "redirect_uri": settings.SSO_REDIRECT_URI,
+        "verify_ssl": settings.SSO_VERIFY_SSL,
+    }
 
     # 2. Đổi authorization code lấy access token từ WSO2
     try:
-        async with httpx.AsyncClient(verify=verify_ssl, timeout=15.0) as client:
+        async with httpx.AsyncClient(verify=cfg["verify_ssl"], timeout=15.0) as client:
             token_resp = await client.post(
-                f"{settings.WSO2_BASE_URL}/oauth2/token",
+                f"{cfg['base_url']}/oauth2/token",
                 data={
                     "grant_type": "authorization_code",
                     "code": body.code,
-                    "redirect_uri": settings.SSO_REDIRECT_URI,
+                    "redirect_uri": cfg["redirect_uri"],
                 },
-                auth=(settings.WSO2_CLIENT_ID, settings.WSO2_CLIENT_SECRET),
+                auth=(cfg["client_id"], cfg["client_secret"]),
             )
     except httpx.RequestError:
         raise HTTPException(status.HTTP_502_BAD_GATEWAY, "Không thể kết nối đến máy chủ SSO")
@@ -102,9 +137,9 @@ async def sso_callback(
 
     # 3. Lấy thông tin người dùng từ WSO2 UserInfo
     try:
-        async with httpx.AsyncClient(verify=verify_ssl, timeout=15.0) as client:
+        async with httpx.AsyncClient(verify=cfg["verify_ssl"], timeout=15.0) as client:
             userinfo_resp = await client.get(
-                f"{settings.WSO2_BASE_URL}/oauth2/userinfo",
+                f"{cfg['base_url']}/oauth2/userinfo",
                 headers={"Authorization": f"Bearer {wso2_access_token}"},
             )
     except httpx.RequestError:
